@@ -11,6 +11,12 @@ topics:
   - responsive
   - widgets
 
+screenshots:
+  - description: >-
+      The font steps down as text grows inside a fixed box, and an
+      AutoSizeGroup keeps two texts at the same synchronized size.
+    path: doc/demo.gif
+
 environment:
   sdk: ^3.8.0
   flutter: ">=3.32.0"
