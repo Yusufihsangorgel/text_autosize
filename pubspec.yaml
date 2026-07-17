@@ -3,7 +3,7 @@ description: >-
   Automatically resize text to fit its bounds: shrink the font until the text
   fits the available width, height and maxLines. TextScaler-aware,
   API-compatible with auto_size_text.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/Yusufihsangorgel/text_autosize
 topics:
   - text
