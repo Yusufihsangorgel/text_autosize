@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:text_autosize/text_autosize.dart';
+
+import 'utils.dart';
+
+void main() {
+  testWidgets('does not wrap words when wrapWords is false', (tester) async {
+    await pumpAndExpectFontSize(
+      tester: tester,
+      expectedFontSize: 20,
+      widget: const SizedBox(
+        width: 100,
+        child: AutoSizeText(
+          'XXXXX XXXXX',
+          style: TextStyle(fontSize: 25),
+          wrapWords: false,
+        ),
+      ),
+    );
+    var height = tester.getSize(find.byType(RichText)).height;
+    expect(height, 40);
+
+    await pumpAndExpectFontSize(
+      tester: tester,
+      expectedFontSize: 10,
+      widget: const SizedBox(
+        width: 40,
+        child: AutoSizeText(
+          'XXXXX',
+          style: TextStyle(fontSize: 25),
+          minFontSize: 10,
+          maxLines: 10,
+          wrapWords: false,
+        ),
+      ),
+    );
+    height = tester.getSize(find.byType(RichText)).height;
+    expect(height, 20);
+  });
+
+  testWidgets('wraps words by default', (tester) async {
+    await pumpAndExpectFontSize(
+      tester: tester,
+      expectedFontSize: 30,
+      widget: const SizedBox(
+        width: 90,
+        child: AutoSizeText(
+          'XXXXXX',
+          style: TextStyle(fontSize: 40),
+          maxLines: 2,
+        ),
+      ),
+    );
+    final height = tester.getSize(find.byType(RichText)).height;
+    expect(height, 60);
+  });
+}
