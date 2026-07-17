@@ -1,7 +1,7 @@
 name: text_autosize
 description: >-
-  Automatically resize text to fit its bounds. A maintained, TextScaler-aware
-  successor to the auto_size_text API.
+  Automatically resize text to fit its bounds. TextScaler-aware,
+  API-compatible with auto_size_text.
 version: 0.1.0
 repository: https://github.com/Yusufihsangorgel/text_autosize
 topics:

@@ -14,6 +14,9 @@ import 'package:flutter/widgets.dart';
 /// Members deregister themselves when they are disposed, so a group can be
 /// kept alive across route changes without leaking widget state.
 class AutoSizeGroup {
+  /// Creates a group that synchronizes the font size of its members.
+  AutoSizeGroup();
+
   final _listeners = <_AutoSizeTextState, double>{};
   var _widgetsNotified = false;
   var _fontSize = double.infinity;
@@ -101,6 +104,12 @@ class AutoSizeGroup {
 /// * [strutStyle] is passed through as given and is not resized together with
 ///   the text. A strut with a fixed font size puts a floor under the line
 ///   height regardless of the fitted font size.
+/// * [softWrap] affects rendering but not measurement, so text that is fitted
+///   with wrapping in mind can still overflow horizontally when soft wrapping
+///   is disabled.
+/// * With [wrapWords] set to false, the longest-word check measures the words
+///   with the base style only; per-span font sizes of rich text are not
+///   considered in that check.
 class AutoSizeText extends StatefulWidget {
   /// Creates an [AutoSizeText] widget.
   ///

@@ -8,13 +8,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # An empty version resolves to the latest stable release. 3.32.0 is
+        # the oldest Flutter version declared in pubspec.yaml.
+        flutter-version: ["", "3.32.0"]
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: ${{ matrix.flutter-version }}
       - run: flutter pub get
-      - run: dart format --output=none --set-exit-if-changed .
+      # Formatter output can differ between Dart releases, so the format
+      # check only runs against the latest stable.
+      - if: matrix.flutter-version == ''
+        run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
       - run: flutter test
       - name: Analyze example

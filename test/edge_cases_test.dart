@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:text_autosize/text_autosize.dart';
 
@@ -69,12 +68,14 @@ void main() {
   });
 
   testWidgets('works inside a SelectionArea', (tester) async {
-    SelectedContent? selectedContent;
+    // The callback type is inferred to avoid naming SelectedContent, which
+    // has moved between libraries across Flutter releases.
+    String? selectedText;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: SelectionArea(
-            onSelectionChanged: (content) => selectedContent = content,
+            onSelectionChanged: (content) => selectedText = content?.plainText,
             child: const Center(child: AutoSizeText('Hello world')),
           ),
         ),
@@ -89,6 +90,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(selectedContent?.plainText, 'Hello');
+    expect(selectedText, 'Hello');
   });
 }

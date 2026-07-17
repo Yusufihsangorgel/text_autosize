@@ -20,6 +20,8 @@ including nonlinear system font scaling.
 
 ## Usage
 
+Requires Flutter 3.32 or later.
+
 ```dart
 import 'package:text_autosize/text_autosize.dart';
 
@@ -126,9 +128,16 @@ AutoSizeText(
 
 Intentional behavior differences from `auto_size_text` 3.0.0:
 
-* `minFontSize`, `maxFontSize` and `presetFontSizes` bound the logical
-  (unscaled) font size. The user's font scale is applied on top, so text
-  scaled up by the system still respects the accessibility setting.
+* The built `Text` carries the logical font size plus a `TextScaler`, instead
+  of a pre-scaled font size with scaling disabled. The rendered pixels are
+  identical; only the internal representation differs. Migrated tests that
+  look up the inner `Text` through `textKey` and assert on `style.fontSize`
+  see the logical value now.
+* With a linear scaler, `minFontSize`, `maxFontSize` and `presetFontSizes`
+  produce the same rendered size as the original package. The behavior only
+  differs under a nonlinear scaler (for example Android 14 system font
+  scaling), where the fitted size is computed with the actual scaler instead
+  of a single factor.
 * Rich text is measured with the fully resolved style, exactly as `Text.rich`
   renders it. The original measured the span's own style only, which could
   mismeasure spans that inherit their size from `DefaultTextStyle`.
@@ -163,6 +172,12 @@ therefore performs O(log n) text layouts for n candidate sizes, and a single
   `IntrinsicHeight`.
 * `strutStyle` is passed through as given and is not resized with the text. A
   strut with a fixed font size puts a floor under the line height.
+* `softWrap: false` affects rendering but not measurement, so text that is
+  fitted with wrapping in mind can still overflow horizontally when soft
+  wrapping is disabled. This matches `auto_size_text`.
+* With `wrapWords: false`, the longest-word check measures the words with the
+  base style only. Per-span font sizes of rich text are not considered in
+  that check. This also matches `auto_size_text`.
 
 ## Credits
 
