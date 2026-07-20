@@ -109,11 +109,11 @@ AutoSizeText(
 
 ## Migration from auto_size_text
 
-1. Replace the dependency in `pubspec.yaml`:
+1. Replace the dependency:
 
-   ```yaml
-   dependencies:
-     text_autosize: ^0.1.0
+   ```sh
+   flutter pub remove auto_size_text
+   flutter pub add text_autosize
    ```
 
 2. Replace the import. The class names `AutoSizeText` and `AutoSizeGroup` are
