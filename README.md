@@ -123,14 +123,20 @@ AutoSizeText(
    import 'package:text_autosize/text_autosize.dart';
    ```
 
-3. Replace `textScaleFactor` with `textScaler`:
+3. Optionally move `textScaleFactor` to `textScaler`. This step is no longer
+   required to compile: `textScaleFactor` still works and is treated as
+   `TextScaler.linear(factor)`. It is deprecated and will be removed in a
+   future release, so prefer `textScaler`:
 
    ```dart
-   // before
+   // still compiles, deprecated
    AutoSizeText('Hello', textScaleFactor: 1.5)
-   // after
+   // preferred
    AutoSizeText('Hello', textScaler: TextScaler.linear(1.5))
    ```
+
+   Setting both `textScaler` and `textScaleFactor` on the same widget is not
+   allowed and asserts in debug builds.
 
 Intentional behavior differences from `auto_size_text` 3.0.0:
 

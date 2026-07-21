@@ -1,3 +1,12 @@
+## 0.2.0
+
+- Add back a deprecated `textScaleFactor` parameter on `AutoSizeText` and
+  `AutoSizeText.rich`. The 0.1.0 release dropped it, which broke the drop-in
+  claim: any call site that set `textScaleFactor` failed to compile. It now
+  compiles again and maps to `TextScaler.linear(factor)`. Prefer `textScaler`;
+  `textScaleFactor` is deprecated and will be removed later. Setting both
+  asserts in debug builds.
+
 ## 0.1.3
 
 - Install instructions now say `pub add` instead of pinning a version. The

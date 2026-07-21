@@ -134,6 +134,8 @@ class AutoSizeText extends StatefulWidget {
     this.overflow,
     this.overflowReplacement,
     this.textScaler,
+    @Deprecated('Use textScaler instead. Will be removed in a future release.')
+    this.textScaleFactor,
     this.maxLines,
     this.semanticsLabel,
     this.textWidthBasis,
@@ -165,6 +167,8 @@ class AutoSizeText extends StatefulWidget {
     this.overflow,
     this.overflowReplacement,
     this.textScaler,
+    @Deprecated('Use textScaler instead. Will be removed in a future release.')
+    this.textScaleFactor,
     this.maxLines,
     this.semanticsLabel,
     this.textWidthBasis,
@@ -302,6 +306,15 @@ class AutoSizeText extends StatefulWidget {
   /// package. Use `TextScaler.linear(factor)` for a fixed factor.
   final TextScaler? textScaler;
 
+  /// The number of font pixels for each logical pixel.
+  ///
+  /// Kept for source compatibility with the `auto_size_text` package so that
+  /// existing call sites still compile. A non-null value is treated as
+  /// `TextScaler.linear(textScaleFactor)`. Setting both [textScaler] and
+  /// [textScaleFactor] is not allowed.
+  @Deprecated('Use textScaler instead. Will be removed in a future release.')
+  final double? textScaleFactor;
+
   /// An optional maximum number of lines for the text to span, wrapping if
   /// necessary. If the text exceeds the given number of lines, it will be
   /// resized according to the specified bounds and if necessary truncated
@@ -387,8 +400,13 @@ class _AutoSizeTextState extends State<AutoSizeText> {
         }
 
         final maxLines = widget.maxLines ?? defaultTextStyle.maxLines;
+        // ignore: deprecated_member_use_from_same_package
+        final textScaleFactor = widget.textScaleFactor;
         final textScaler =
-            widget.textScaler ?? MediaQuery.textScalerOf(context);
+            widget.textScaler ??
+            (textScaleFactor != null
+                ? TextScaler.linear(textScaleFactor)
+                : MediaQuery.textScalerOf(context));
 
         _validateProperties(style, maxLines);
 
@@ -432,6 +450,12 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     assert(
       widget.key == null || widget.key != widget.textKey,
       'Key and textKey must not be equal.',
+    );
+    assert(
+      // ignore: deprecated_member_use_from_same_package
+      widget.textScaler == null || widget.textScaleFactor == null,
+      'textScaler and textScaleFactor must not both be set. '
+      'textScaleFactor is deprecated; use textScaler.',
     );
 
     final presetFontSizes = widget.presetFontSizes;
