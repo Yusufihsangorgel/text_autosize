@@ -10,7 +10,7 @@ void main() {
       tester: tester,
       widget: const SizedBox(
         width: 100,
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         child: AutoSizeText(
           'XXXXX',
           style: TextStyle(fontSize: 60),
@@ -38,7 +38,7 @@ void main() {
         data: const MediaQueryData(textScaler: TextScaler.linear(3)),
         child: const SizedBox(
           width: 100,
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           child: AutoSizeText(
             'XXXXX',
             style: TextStyle(fontSize: 60),
@@ -61,7 +61,7 @@ void main() {
       tester: tester,
       widget: const SizedBox(
         width: 100,
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         child: AutoSizeText(
           'XXXXX',
           style: TextStyle(fontSize: 60),
