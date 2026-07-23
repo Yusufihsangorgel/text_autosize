@@ -10,12 +10,12 @@ void main() {
       tester: tester,
       widget: const SizedBox(
         width: 100,
-        // ignore: deprecated_member_use_from_same_package
         child: AutoSizeText(
           'XXXXX',
           style: TextStyle(fontSize: 60),
           maxLines: 1,
           minFontSize: 1,
+          // ignore: deprecated_member_use_from_same_package
           textScaleFactor: 2,
         ),
       ),
@@ -38,12 +38,12 @@ void main() {
         data: const MediaQueryData(textScaler: TextScaler.linear(3)),
         child: const SizedBox(
           width: 100,
-          // ignore: deprecated_member_use_from_same_package
           child: AutoSizeText(
             'XXXXX',
             style: TextStyle(fontSize: 60),
             maxLines: 1,
             minFontSize: 1,
+            // ignore: deprecated_member_use_from_same_package
             textScaleFactor: 1,
           ),
         ),
@@ -61,13 +61,13 @@ void main() {
       tester: tester,
       widget: const SizedBox(
         width: 100,
-        // ignore: deprecated_member_use_from_same_package
         child: AutoSizeText(
           'XXXXX',
           style: TextStyle(fontSize: 60),
           maxLines: 1,
           minFontSize: 1,
           textScaler: TextScaler.noScaling,
+          // ignore: deprecated_member_use_from_same_package
           textScaleFactor: 2,
         ),
       ),
