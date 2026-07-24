@@ -1,3 +1,19 @@
+## 0.3.2
+
+- Correct the mechanism in the 0.3.1 note, which said each fit check "accepted
+  the resulting NaN metrics because comparisons against NaN are false". I
+  instrumented the shipped fit check to check that, and it is not what happens.
+  The scaled font size is indeed NaN (`0 × Infinity`), but Flutter does not lay
+  that out to NaN metrics: it sanitises the degenerate layout to a zero-size
+  one (measured `width` 0.0, `height` 1.0), and the fit check accepts it the
+  ordinary way — a zero-size layout fits any box — so the search stops at the
+  smallest candidate and renders at that size. The NaN never reaches the
+  comparison. The observed defect (`fontSize: 0` rendering at 4.0 instead of
+  0.0, with `minFontSize: 4`) and the fix are unchanged; only the explanation
+  was wrong, and it came from an unverified guess about what the engine does
+  with a NaN size. The `>` comparison against NaN is a genuine hazard, but it
+  is not the one this bug hit.
+
 ## 0.3.1
 
 - Correct the description of the 0.3.0 fix. That entry said the NaN layout
