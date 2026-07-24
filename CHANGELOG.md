@@ -1,3 +1,14 @@
+## 1.0.1
+
+- Correct the measured numbers in the code comment and the 0.3.2 note. Both
+  said the degenerate NaN-size layout collapses to `width 0.0, height 1.0`;
+  re-instrumenting the shipped fit check shows the opposite — a zero *height*,
+  not a zero width: `'hello'` measures `width 1.25, height 0.0`, and the width
+  grows with the text while the height stays `0.0`. The mechanism is otherwise
+  unchanged (a zero-height box within the width limit passes the check), and an
+  empty string is the exception worth noting: it lays out to a NaN height,
+  which the check waves through too. Docs only; no code change.
+
 ## 1.0.0
 
 The API is stable. This release adds no features and changes no behaviour; it
@@ -25,12 +36,14 @@ a drop-in for the first.
 - Correct the mechanism in the 0.3.1 note, which said each fit check "accepted
   the resulting NaN metrics because comparisons against NaN are false". I
   instrumented the shipped fit check to check that, and it is not what happens.
-  The scaled font size is indeed NaN (`0 × Infinity`), but Flutter does not lay
-  that out to NaN metrics: it sanitises the degenerate layout to a zero-size
-  one (measured `width` 0.0, `height` 1.0), and the fit check accepts it the
-  ordinary way — a zero-size layout fits any box — so the search stops at the
-  smallest candidate and renders at that size. The NaN never reaches the
-  comparison. The observed defect (`fontSize: 0` rendering at 4.0 instead of
+  The scaled font size is indeed NaN (`0 × Infinity`), but for ordinary text
+  Flutter does not lay that out to NaN metrics: it collapses the degenerate
+  layout to a zero-*height* one (measured for `'hello'`: `width` 1.25,
+  `height` 0.0), and the fit check accepts it the ordinary way — a zero-height
+  box within the width limit fits — so the search stops at the smallest
+  candidate and renders at that size. The NaN never reaches the comparison. (An
+  empty string is the exception: it lays out to a NaN *height*, which the check
+  also accepts, since `NaN > maxHeight` is false — the very hazard below.) The observed defect (`fontSize: 0` rendering at 4.0 instead of
   0.0, with `minFontSize: 4`) and the fix are unchanged; only the explanation
   was wrong, and it came from an unverified guess about what the engine does
   with a NaN size. The `>` comparison against NaN is a genuine hazard, but it

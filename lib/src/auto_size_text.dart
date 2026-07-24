@@ -537,12 +537,15 @@ class _AutoSizeTextState extends State<AutoSizeText> {
 
     // Every probe below scales the span by `candidate / baseFontSize`. A base
     // that is zero, negative or non-finite makes that ratio infinite or NaN,
-    // so the probe lays the span out at a NaN font size. Flutter sanitises
-    // that to a zero-size layout (measured: width 0, height 1) rather than
-    // reporting NaN metrics, and a zero-size layout passes every fit check
-    // trivially, so the search takes the smallest candidate and renders at the
-    // wrong size. A plain Text renders such a style without complaint, so
-    // match it: use the size the caller asked for and do not autosize.
+    // so the probe lays the span out at a NaN font size. For ordinary text
+    // Flutter collapses that to a zero-height layout (measured for 'hello':
+    // width 1.25, height 0.0) rather than reporting NaN metrics, and a
+    // zero-height box within the width limit passes the fit check, so the
+    // search takes the smallest candidate and renders at the wrong size. (An
+    // empty string is the exception that proves the hazard: it does lay out to
+    // a NaN height, which the check also waves through, since `NaN > maxHeight`
+    // is false.) A plain Text renders such a style without complaint, so match
+    // it: use the size the caller asked for and do not autosize.
     if (!baseFontSize.isFinite || baseFontSize <= 0) {
       return (baseFontSize, true);
     }
