@@ -13,7 +13,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// Members deregister themselves when they are disposed, so a group can be
 /// kept alive across route changes without leaking widget state.
-class AutoSizeGroup {
+final class AutoSizeGroup {
   /// Creates a group that synchronizes the font size of its members.
   AutoSizeGroup();
 
@@ -514,6 +514,17 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     );
 
     final baseFontSize = style.fontSize!;
+
+    // Every probe below scales the span by `candidate / baseFontSize`. A base
+    // that is zero, negative or non-finite makes that ratio infinite or NaN,
+    // and a span laid out at a NaN size reports NaN metrics, which the fit
+    // check reads as "it fits" because every comparison against NaN is false.
+    // A plain Text renders such a style without complaint, so match it: use
+    // the size the caller asked for and do not autosize.
+    if (!baseFontSize.isFinite || baseFontSize <= 0) {
+      return (baseFontSize, true);
+    }
+
     final textAlign =
         widget.textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start;
     final textDirection = widget.textDirection ?? Directionality.of(context);
@@ -666,10 +677,12 @@ class _AutoSizeTextState extends State<AutoSizeText> {
       locale: widget.locale,
       softWrap: widget.softWrap,
       overflow: widget.overflow,
-      textScaler: _RatioTextScaler.compose(
-        textScaler,
-        fontSize / style.fontSize!,
-      ),
+      // Same degenerate-base guard as the fit probes: with a zero or
+      // non-finite base the ratio is infinite or NaN, which would scale the
+      // span to NaN metrics. Fall back to the ambient scaler.
+      textScaler: (!style.fontSize!.isFinite || style.fontSize! <= 0)
+          ? textScaler
+          : _RatioTextScaler.compose(textScaler, fontSize / style.fontSize!),
       maxLines: maxLines,
       semanticsLabel: widget.semanticsLabel,
       textWidthBasis: widget.textWidthBasis,

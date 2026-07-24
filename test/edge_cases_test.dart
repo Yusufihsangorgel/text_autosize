@@ -5,6 +5,7 @@ import 'package:text_autosize/text_autosize.dart';
 import 'utils.dart';
 
 void main() {
+  _degenerateBaseFontSizeTests();
   testWidgets('handles empty text', (tester) async {
     // An empty text still occupies one line of height, so the box has to be
     // one line high for the default font size to fit.
@@ -91,5 +92,75 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(selectedText, 'Hello');
+  });
+}
+
+void _degenerateBaseFontSizeTests() {
+  group('a degenerate base font size', () {
+    // A zero base made the fit probes scale the span by fontSize / 0, laying
+    // out NaN-sized text that every fit check accepted, which then wedged a
+    // later, ordinary layout. Plain Text renders these styles without
+    // complaint, so AutoSizeText has to as well.
+    // NaN is deliberately absent: a plain Text asserts on it inside Flutter's
+    // own widget_span, so matching Text means throwing there too (verified
+    // with a control widget). These are the degenerate sizes Flutter renders.
+    for (final base in <double>[0, -4, double.infinity]) {
+      testWidgets('$base renders and does not wedge a later layout', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 130,
+                height: 60,
+                child: AutoSizeText('hello', style: TextStyle(fontSize: base)),
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+
+        // The layout that used to hang: an ordinary AutoSizeText pumped after
+        // the degenerate one.
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 130,
+                height: 60,
+                child: AutoSizeText(
+                  'hello again',
+                  style: const TextStyle(fontSize: 12),
+                  minFontSize: 4,
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.text('hello again'), findsOneWidget);
+      });
+    }
+
+    testWidgets('a zero base on the rich constructor also survives', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 130,
+              height: 60,
+              child: AutoSizeText.rich(
+                TextSpan(text: 'rich'),
+                style: TextStyle(fontSize: 0),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 }

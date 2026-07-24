@@ -1,3 +1,23 @@
+## 0.3.0
+
+- Fix a hang reachable from a legal style. `TextStyle(fontSize: 0)` — which a
+  plain `Text` renders without complaint — made every fit probe scale the span
+  by `candidate / 0`. The resulting infinite ratio laid out text at NaN sizes,
+  and because each fit check compares against NaN (where every comparison is
+  false) the probe reported that it fitted. Worse than the wrong answer, that
+  NaN layout left the text engine in a state where a later, ordinary
+  `AutoSizeText` could stop returning from layout entirely. A zero, negative or
+  infinite base now skips the ratio machinery and renders at the size the caller
+  asked for, which is what `Text` does. Covered by tests, including one that
+  pumps an ordinary widget afterwards to prove nothing is wedged.
+- Mark `AutoSizeGroup` as `final`. Its entire contract is private, so an
+  external `implements AutoSizeGroup` compiled but was guaranteed to fail with
+  `NoSuchMethodError` the moment a widget used it. `AutoSizeText` is
+  deliberately left open: it is a drop-in for `auto_size_text`, whose
+  `AutoSizeText` is open, as is Flutter's own `Text`, and subclassing a text
+  widget to preset its style is a real pattern this should not break.
+- Remove a stray `# Changelog` heading from the middle of this file.
+
 ## 0.2.0
 
 - Add back a deprecated `textScaleFactor` parameter on `AutoSizeText` and
@@ -23,8 +43,6 @@
 
 - Expand the package description to name what the package does in the
   words people search for. No code changes.
-
-# Changelog
 
 ## 0.1.0
 
