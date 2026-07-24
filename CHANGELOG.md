@@ -1,3 +1,23 @@
+## 0.3.1
+
+- Correct the description of the 0.3.0 fix. That entry said the NaN layout
+  could leave a later, ordinary `AutoSizeText` unable to return from layout.
+  I took that from a bug report without reproducing it myself, and I cannot:
+  removing the guard again and pumping a degenerate widget followed by an
+  ordinary one — separately, in one tree, and with a 5000-character string —
+  finishes in seconds every time. The claim was not mine to make and it is
+  withdrawn.
+
+  What 0.3.0 actually fixed, measured before and after: with
+  `TextStyle(fontSize: 0)`, `minFontSize: 4` and `maxFontSize: 40`, the widget
+  used to render at **4.0** — it divided by the zero base, every probe scaled
+  the span by an infinite ratio, and each fit check accepted the resulting NaN
+  metrics because comparisons against NaN are false, so the search returned a
+  size the caller never asked for. It now renders at **0.0**, which is exactly
+  what a plain `Text` does with the same style. Silently substituting a
+  different size in a package whose contract is "behaves like `Text`" is the
+  real defect, and it is fixed; nothing was hanging.
+
 ## 0.3.0
 
 - Fix a hang reachable from a legal style. `TextStyle(fontSize: 0)` — which a
