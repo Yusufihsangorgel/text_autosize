@@ -1,3 +1,9 @@
+## 1.0.2
+
+- Add `example/README.md` for pub.dev's Example tab. It describes what the demo
+  app shows — single line, wrapping, a minFontSize floor with ellipsis, and an
+  AutoSizeGroup — with the demo gif and the key widget snippets. Docs only.
+
 ## 1.0.1
 
 - Correct the measured numbers in the code comment and the 0.3.2 note. Both
