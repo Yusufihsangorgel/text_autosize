@@ -79,6 +79,15 @@ AutoSizeText('Label one', group: group, maxLines: 1);
 AutoSizeText('A much longer label two', group: group, maxLines: 1);
 ```
 
+A group settles one frame after its members first appear, and does not
+oscillate: each member measures itself against its own constraints alone, so
+reporting a size can only pull the group's minimum down. The one frame is
+visible in the case where members build before a more constrained sibling has
+reported — they lay out at their own size, then rebuild at the group's. If you
+are asserting on a size in a test, or capturing a golden on the frame the
+widget appears, pump once more first. Removing the member that was setting the
+minimum lets the rest grow back.
+
 ### Rich text
 
 ```dart

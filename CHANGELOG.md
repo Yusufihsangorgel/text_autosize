@@ -1,3 +1,25 @@
+## 1.0.0
+
+The API is stable. This release adds no features and changes no behaviour; it
+settles the one question that was still open, so the surface can be frozen.
+
+- Document and pin how an `AutoSizeGroup` settles. Each member measures itself
+  against its own constraints alone, never against what the group has already
+  agreed on, so reporting a size can only lower the group's minimum. The fixed
+  point is therefore reached one frame after the members first appear, and a
+  rebuild cannot feed back into a member's own candidate size — there is no
+  oscillation to damp. The cost is that first frame: members build in tree
+  order, so one that builds before a more constrained sibling lays out at its
+  own larger size until the next frame. Tests now pin all three properties
+  (settles by the second frame, stays settled across further frames, and grows
+  back when the member setting the minimum is removed).
+- `textScaleFactor` remains available and `@Deprecated`, for source
+  compatibility with `auto_size_text`. It can be removed in a 2.0.0.
+
+`AutoSizeGroup` is `final`. `AutoSizeText` is deliberately left open, because
+`auto_size_text` and Flutter's own `Text` are, and this package is meant to be
+a drop-in for the first.
+
 ## 0.3.2
 
 - Correct the mechanism in the 0.3.1 note, which said each fit check "accepted

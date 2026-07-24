@@ -191,4 +191,109 @@ void main() {
     expect(effectiveFontSize(textFor('AAAAAA')), 10);
     expect(effectiveFontSize(textFor('BBBBBB')), 50);
   });
+
+  // The convergence guarantee, pinned. Each member computes its own largest
+  // fitting size from its own constraints, independently of what the group has
+  // settled on, so reporting it can only lower the group minimum or leave it
+  // alone. That makes the fixed point reachable in a single extra frame and
+  // means a rebuild cannot feed back into a member's own candidate size.
+  testWidgets('a group settles after one frame and does not oscillate', (
+    tester,
+  ) async {
+    final group = AutoSizeGroup();
+
+    Widget cell(double width) => SizedBox(
+      width: width,
+      height: 40,
+      child: AutoSizeText(
+        'the same text in both cells',
+        group: group,
+        minFontSize: 4,
+        maxFontSize: 40,
+        maxLines: 1,
+        style: const TextStyle(fontSize: 40),
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: Row(children: [cell(300), cell(120)])),
+    );
+
+    List<double> rendered() => tester
+        .widgetList<RichText>(find.byType(RichText))
+        .map((r) => r.text.style!.fontSize!)
+        .toList();
+
+    // First frame: the roomier cell has laid out at its own maximum, because
+    // the narrow cell had not reported yet when it built.
+    final firstFrame = rendered();
+    expect(firstFrame.first, greaterThan(firstFrame.last));
+
+    // Second frame: both are at the narrow cell's size.
+    await tester.pump();
+    final settled = rendered();
+    expect(settled.first, settled.last);
+
+    // And it stays there: no further pump changes anything.
+    for (var i = 0; i < 4; i++) {
+      await tester.pump();
+      expect(rendered(), settled, reason: 'frame ${i + 3} changed the size');
+    }
+  });
+
+  testWidgets('removing the constraining member releases the group', (
+    tester,
+  ) async {
+    final group = AutoSizeGroup();
+    var showNarrow = true;
+
+    Widget cell(double width) => SizedBox(
+      width: width,
+      height: 40,
+      child: AutoSizeText(
+        'shared text here',
+        group: group,
+        minFontSize: 4,
+        maxFontSize: 40,
+        maxLines: 1,
+        style: const TextStyle(fontSize: 40),
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => Column(
+            children: [
+              cell(300),
+              if (showNarrow) cell(90),
+              TextButton(
+                onPressed: () => setState(() => showNarrow = false),
+                child: const Text('drop'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    double first() => tester
+        .widgetList<RichText>(find.byType(RichText))
+        .first
+        .text
+        .style!
+        .fontSize!;
+
+    final constrained = first();
+
+    await tester.tap(find.text('drop'));
+    await tester.pumpAndSettle();
+
+    expect(
+      first(),
+      greaterThan(constrained),
+      reason: 'the group should grow back once the narrow member is gone',
+    );
+  });
 }

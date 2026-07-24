@@ -13,6 +13,26 @@ import 'package:flutter/widgets.dart';
 ///
 /// Members deregister themselves when they are disposed, so a group can be
 /// kept alive across route changes without leaking widget state.
+///
+/// ## How it settles
+///
+/// Each member works out the largest size at which *it* fits from its own
+/// constraints alone, without consulting the group. Reporting that can only
+/// lower the group's minimum or leave it unchanged, so the group reaches its
+/// fixed point in one further frame and a rebuild cannot feed back into any
+/// member's own candidate size. There is no oscillation to damp.
+///
+/// The cost of that is a single frame: members build in tree order, so one that
+/// builds before a more constrained sibling has reported lays out at its own
+/// larger size for that first frame, then rebuilds at the group's size on the
+/// next. Where that first frame is visible — an entry animation, a golden test
+/// taken on the frame the widget appears — pump one more frame before reading
+/// the size. This matches how `auto_size_text` behaves, and is why a group
+/// cannot promise a correct size on the frame its members first appear.
+///
+/// Removing a member releases whatever it was holding: if the member that was
+/// setting the minimum is disposed or moved to another group, the remaining
+/// members grow back to the next smallest.
 final class AutoSizeGroup {
   /// Creates a group that synchronizes the font size of its members.
   AutoSizeGroup();
