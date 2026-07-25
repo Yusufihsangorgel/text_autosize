@@ -102,24 +102,41 @@ void _degenerateBaseFontSizeTests() {
     // later, ordinary layout. Plain Text renders these styles without
     // complaint, so AutoSizeText has to as well.
     // NaN is deliberately absent: a plain Text asserts on it inside Flutter's
-    // own widget_span, so matching Text means throwing there too (verified
-    // with a control widget). These are the degenerate sizes Flutter renders.
+    // own widget_span, so matching Text means throwing there too.
+    //
+    // Which sizes a plain Text accepts is not fixed across Flutter versions:
+    // 3.32.0 asserts `fontSize >= 0` inside TextScaler, and later releases
+    // render a negative size without complaint. Rather than pin a list per
+    // version, each case renders a plain Text with the same style first and
+    // holds AutoSizeText to whatever that did. The contract is parity with
+    // Text, so the control is the specification.
     for (final base in <double>[0, -4, double.infinity]) {
       testWidgets('$base renders and does not wedge a later layout', (
         tester,
       ) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 130,
-                height: 60,
-                child: AutoSizeText('hello', style: TextStyle(fontSize: base)),
-              ),
-            ),
-          ),
+        Widget framed(Widget child) => MaterialApp(
+          home: Scaffold(body: SizedBox(width: 130, height: 60, child: child)),
         );
-        expect(tester.takeException(), isNull);
+
+        // What a plain Text does with this style on this Flutter version.
+        await tester.pumpWidget(
+          framed(Text('hello', style: TextStyle(fontSize: base))),
+        );
+        final plainThrew = tester.takeException() != null;
+
+        await tester.pumpWidget(
+          framed(AutoSizeText('hello', style: TextStyle(fontSize: base))),
+        );
+        expect(
+          tester.takeException() != null,
+          plainThrew,
+          reason: plainThrew
+              ? 'a plain Text rejects fontSize $base here, so AutoSizeText '
+                    'must reject it too'
+              : 'a plain Text renders fontSize $base here, so AutoSizeText '
+                    'must render it too',
+        );
+        if (plainThrew) return; // nothing wedged; Flutter refused it up front
 
         // The layout that used to hang: an ordinary AutoSizeText pumped after
         // the degenerate one.
