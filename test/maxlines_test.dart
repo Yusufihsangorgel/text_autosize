@@ -48,4 +48,27 @@ void main() {
       ),
     );
   });
+
+  testWidgets('an explicit maxLines wins over DefaultTextStyle', (
+    tester,
+  ) async {
+    // The mirror of the test above, and the direction Flutter's own Text
+    // takes: maxLines ?? defaultTextStyle.maxLines. Without it the two could
+    // be swapped and only the fallback case would notice.
+    //
+    // maxLines: 1 in a 99px box shrinks the text to 9; deferring to the
+    // ambient 5 would leave it at its natural size.
+    await pumpAndExpectFontSize(
+      tester: tester,
+      expectedFontSize: 9,
+      widget: const DefaultTextStyle(
+        style: TextStyle(fontSize: 20),
+        maxLines: 5,
+        child: SizedBox(
+          width: 99,
+          child: AutoSizeText('XXXXX XXXXX', maxLines: 1, minFontSize: 1),
+        ),
+      ),
+    );
+  });
 }
