@@ -38,3 +38,12 @@ jobs:
         run: |
           flutter pub get
           flutter analyze
+
+      # doc/scaler.png, and the pt figures quoted beside it in README.md, come
+      # out of this test, which prints both readouts as it renders the panel.
+      # text_scaler_test.dart covers the fitting rule itself; the demo tag keeps
+      # this file out of the suite above, so what this step adds is that the
+      # figure in the README stays something the code can still produce.
+      - name: Render the README's scaler figure
+        working-directory: example
+        run: flutter test --tags demo test/scaler_capture_test.dart

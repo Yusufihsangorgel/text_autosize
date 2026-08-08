@@ -17,6 +17,10 @@ screenshots:
       The font steps down as text grows inside a fixed box, and an
       AutoSizeGroup keeps two texts at the same synchronized size.
     path: doc/demo.gif
+  - description: >-
+      Under a 2.0x nonlinear font scale, the fit measured with the scaler
+      stays inside the box while a fit derived from one factor overflows.
+    path: doc/scaler.png
 
 environment:
   sdk: ^3.8.0

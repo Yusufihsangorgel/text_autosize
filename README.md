@@ -116,6 +116,44 @@ AutoSizeText(
 )
 ```
 
+## System font scale
+
+The user's font scale reaches a widget as a `TextScaler` on `MediaQuery`, and a
+`TextScaler` is a function rather than a multiplier: `scale(fontSize)` is free
+to grow small text by more than large text, which is what nonlinear system font
+scaling does. Flutter says as much about the single number it used to hand out.
+The dartdoc on `TextScaler.textScaleFactor` calls it an estimate that "may not
+reflect the exact text scaling strategy this `TextScaler` represents, especially
+when this `TextScaler` is not linear".
+
+Shrinking is what makes such a number wrong. A factor sampled at the size the
+text starts at describes the curve at that size and nowhere else, and fitting
+moves the text to a different size, where the curve says something else. So the
+fitted size is measured with the scaler itself, once per candidate size:
+
+```dart
+// Nothing to pass: the MediaQuery scaler is used for measuring and rendering.
+AutoSizeText('Kitchen & Dining', style: TextStyle(fontSize: 40), maxLines: 1)
+
+// Or fit against a scale this device cannot produce, which is how you test it.
+AutoSizeText(label, textScaler: TextScaler.linear(2), maxLines: 1)
+```
+
+![At a 2.0x nonlinear font scale, two identical boxes: AutoSizeText fits the whole label, the single-factor fit is cut off](doc/scaler.png)
+
+The example app carries this panel, with the fitted sizes read back from the
+widgets that were built. Both sides get the same string, the same style, the
+same box and the same `minFontSize` and step size; the only difference is how
+each one consults the scaler. In the capture, `AutoSizeText` calls `scale` on
+every candidate, settles on 11 pt and renders at 22 pt, inside the box. The
+other side samples one factor at 40 pt, where this curve reads 1.5x: it settles
+on 15 pt expecting 22.5 pt on screen, the curve renders it at 30 pt, and the
+label spills out of the box it was fitted to.
+
+Drag that panel's scale down to 1.0, or switch it to a linear scaler, and the
+two sides agree exactly. Under a linear scaler one factor is the whole story,
+and this particular difference disappears.
+
 ## Migration from auto_size_text
 
 1. Replace the dependency:
