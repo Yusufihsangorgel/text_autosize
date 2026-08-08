@@ -1,3 +1,36 @@
+## 1.0.3
+
+- Stop shipping `build/` inside the published archive. pub replaces
+  `.gitignore` with `.pubignore` per directory rather than layering the two, so
+  a `.pubignore` at the repository root switched the root `.gitignore` off for
+  the whole tree — and `build/` is named only in `.gitignore`. That is how it
+  shipped: 1.0.2 on pub.dev is 28,948,750 bytes compressed, and of its
+  93,096,279 uncompressed bytes, 92,770,749 are under `build/`, with two
+  test-cache `.dill` files accounting for 92,643,992 of those. It is
+  `flutter test` that writes them, so the size tracked whatever happened to be
+  in the working tree at publish time. The rule now lives in `doc/.pubignore`,
+  beside the directory it governs, where there is no `.gitignore` for it to
+  shadow. Checked with a 44 MB `build/` present rather than a clean tree, since
+  absence would prove nothing: the archive is 298 KB, the dry-run listing names
+  no `build/` entry, and `doc/blog/` is still excluded while `doc/banner.png`
+  is still included. Nothing under `lib/` changed — this is what `pub get`
+  downloads and leaves in the pub cache, not what the widget does.
+- Open the example app on a panel showing why a fitted size has to be measured
+  with the `TextScaler` instead of with a scale factor sampled from it, and say
+  so in `README.md`, which had claimed the fit is scaler-aware in a bullet and
+  left it there. Both sides of the panel get the same string, style, box,
+  `minFontSize` and step size, and differ only in how they consult the scaler.
+  Under a 2.0x nonlinear scale the measured fit settles on 11 pt and renders at
+  22 pt inside the box, while the sampled factor settles on 15 pt expecting
+  22.5 pt, renders at 30 pt and spills out of the box it was fitted to; at 1.0,
+  or under a linear scaler, the two agree exactly. Each side reports the size
+  it settled on by reading it back from the `Text` that was built rather than
+  recomputing it, so the figures quoted in `README.md` are the ones the panel
+  produces. `doc/scaler.png` is the output of
+  `example/test/scaler_capture_test.dart`, CI runs that test so the figure
+  stays something the code can still make, and the image is also declared as a
+  pub.dev screenshot. Docs and example only; no library change.
+
 ## 1.0.2
 
 - Add `example/README.md` for pub.dev's Example tab. It describes what the demo
