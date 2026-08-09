@@ -9,9 +9,40 @@ migrates by changing the import. On top of the familiar API, this package is
 built against current Flutter releases and handles `TextScaler` correctly,
 including nonlinear system font scaling.
 
+![demo](doc/demo.gif)
+
+## Why this instead of what you already have
+
+**Instead of `FittedBox`.** It has no concept of font size, only `fit`,
+`alignment` and `clipBehavior` (`widgets/basic.dart:2091`). Its
+`performLayout` lays the child out with `const BoxConstraints()`
+(`rendering/proxy_box.dart:2922`), so the text always measures itself
+unconstrained, settles as one unwrapped line, and is then scaled down like a
+picture. What you get is one shrunken line, not text reflowed at a smaller
+size.
+
+**Instead of `auto_size_text`.** `TextScaler` does not appear anywhere in its
+`lib/`; it reads the deprecated scalar `textScaleFactor` instead, so nonlinear
+system font scaling is out of reach by construction. `WidgetSpan` is absent
+too, which is issue #61, open since June 2020 and still landing on
+`assert(dimensions != null)` (`widgets/widget_span.dart:163`). The maintainer
+wrote there on 2020-09-27: "unfortunately I failed with my attempt to support
+`WidgetSpans`." The last release was October 2021.
+
+**Reach for it when**
+
+- A label has to fit a fixed box and your users may have large system font
+  sizes set.
+- Text mixes inline widgets such as icons or chips with words and still has to
+  fit.
+- Several labels need to settle on one shared size through `AutoSizeGroup`.
+
+Skip it when the text is allowed to wrap or scroll: a plain `Text` that can
+grow is easier to reason about than any fitting algorithm, and it stays
+readable when someone scales their fonts up.
+
 ## Demo
 
-![demo](doc/demo.gif)
 
 ## Features
 
