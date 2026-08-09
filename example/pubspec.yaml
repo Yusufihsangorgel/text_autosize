@@ -3,6 +3,10 @@ description: Demonstrates the text_autosize package.
 publish_to: none
 
 environment:
+  # The example depends on the Flutter SDK, so it has to say so: without this
+  # pub resolves it as a plain Dart package and the resolution fails during
+  # `flutter pub publish`.
+  flutter: ">=3.22.0"
   sdk: ^3.8.0
 
 dependencies:
