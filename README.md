@@ -4,7 +4,7 @@
 
 A Flutter widget that automatically resizes text to fit within its bounds.
 
-The API follows the `auto_size_text` package by Simon Leier, so existing code
+The API follows the `auto_size_text` package by Simon Leier, and existing code
 migrates by changing the import. On top of the familiar API, this package is
 built against current Flutter releases and handles `TextScaler` correctly,
 including nonlinear system font scaling.
@@ -83,7 +83,7 @@ A group settles one frame after its members first appear, and does not
 oscillate: each member measures itself against its own constraints alone, so
 reporting a size can only pull the group's minimum down. The one frame is
 visible in the case where members build before a more constrained sibling has
-reported — they lay out at their own size, then rebuild at the group's. If you
+reported: they lay out at their own size, then rebuild at the group's. If you
 are asserting on a size in a test, or capturing a golden on the frame the
 widget appears, pump once more first. Removing the member that was setting the
 minimum lets the rest grow back.
@@ -103,8 +103,8 @@ AutoSizeText.rich(
 )
 ```
 
-All font sizes in the span tree are scaled by the same factor, so the
-proportions of the spans are preserved.
+All font sizes in the span tree are scaled by the same factor, which preserves
+the proportions of the spans.
 
 ### Overflow replacement
 
@@ -115,6 +115,44 @@ AutoSizeText(
   overflowReplacement: Text('Not enough room'),
 )
 ```
+
+## Icons and badges inside the text
+
+`AutoSizeText.rich` takes a `WidgetSpan`. An inline icon shrinks with the
+sentence around it, and it counts against the width while the size is being
+chosen:
+
+```dart
+AutoSizeText.rich(
+  const TextSpan(children: [
+    TextSpan(text: 'Signed in as '),
+    WidgetSpan(child: Icon(Icons.verified)),
+    TextSpan(text: ' ada@example.com'),
+  ]),
+  maxLines: 1,
+)
+```
+
+A `TextPainter` cannot measure a widget, and a text scaler resizes glyphs while
+leaving widgets alone. Both are handled here: each placeholder is measured as a
+square of the size being tested, and the child is painted into that same square
+through a `FittedBox`, which is what keeps the fit the probes found and the fit
+on screen from drifting apart.
+
+Pass `placeholderSize` for something that is not square:
+
+```dart
+AutoSizeText.rich(
+  span,
+  maxLines: 1,
+  placeholderSize: (span, fontSize) => Size(fontSize * 3, fontSize),
+)
+```
+
+`auto_size_text` throws on this. Its `#61` has been open since June 2020, and
+the maintainer answered it with "I failed with my attempt to support
+`WidgetSpans`". The assertion you get there is
+`widget_span.dart: 'dimensions != null': is not true`.
 
 ## System font scale
 

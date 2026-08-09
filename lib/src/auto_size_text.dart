@@ -161,7 +161,8 @@ class AutoSizeText extends StatefulWidget {
     this.textWidthBasis,
     this.textHeightBehavior,
     this.selectionColor,
-  }) : textSpan = null;
+  }) : textSpan = null,
+       placeholderSize = null;
 
   /// Creates an [AutoSizeText] widget with a [TextSpan].
   ///
@@ -194,10 +195,26 @@ class AutoSizeText extends StatefulWidget {
     this.textWidthBasis,
     this.textHeightBehavior,
     this.selectionColor,
+    this.placeholderSize,
   }) : data = null;
 
   /// The default font size if none is specified.
   static const double _defaultFontSize = 14;
+
+  /// The box each [WidgetSpan] occupies, at the font size it is measured with.
+  ///
+  /// A [TextPainter] cannot measure a widget, so it needs the size of every
+  /// [WidgetSpan] handed to it before layout. Left null, each placeholder is a
+  /// square of the current font size, which is what an inline icon or badge
+  /// wants: it grows and shrinks with the text around it.
+  ///
+  /// Return a different [Size] to break out of the square. The size is used
+  /// for the fit probes and for the box the child is painted into, so
+  /// measurement and paint cannot disagree.
+  ///
+  /// Only used by [AutoSizeText.rich], and only when the span tree holds a
+  /// [WidgetSpan].
+  final Size Function(WidgetSpan span, double fontSize)? placeholderSize;
 
   /// Sets the key for the resulting [Text] widget.
   ///
@@ -570,6 +587,10 @@ class _AutoSizeTextState extends State<AutoSizeText> {
         textDirection: textDirection,
         textWidthBasis: textWidthBasis,
         textHeightBehavior: textHeightBehavior,
+        // The span tree keeps its own font sizes and is resized by the ratio
+        // scaler, so the candidate size is what the placeholders have to match
+        // rather than whatever the root style carries.
+        placeholderFontSize: fontSize,
       );
     }
 
@@ -624,6 +645,88 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     return (fontSize, lastValueFits);
   }
 
+  /// Every [WidgetSpan] in [root], in the order a painter lays them out.
+  static List<WidgetSpan> _widgetSpans(InlineSpan root) {
+    final found = <WidgetSpan>[];
+    root.visitChildren((span) {
+      if (span is WidgetSpan) found.add(span);
+      return true;
+    });
+    return found;
+  }
+
+  /// The box each [WidgetSpan] in [spans] occupies at [fontSize].
+  List<PlaceholderDimensions> _placeholderDimensions(
+    List<WidgetSpan> spans,
+    double fontSize,
+  ) {
+    final sizer = widget.placeholderSize ?? _squareEm;
+    return [
+      for (final span in spans)
+        PlaceholderDimensions(
+          size: sizer(span, fontSize),
+          alignment: span.alignment,
+          baseline: span.baseline,
+          // A baseline-aligned placeholder needs a distance from its top to
+          // the baseline. Sitting the box on the baseline is what an inline
+          // icon does, and it is what the paint side does below.
+          baselineOffset: span.alignment == PlaceholderAlignment.baseline
+              ? sizer(span, fontSize).height
+              : null,
+        ),
+    ];
+  }
+
+  static Size _squareEm(WidgetSpan span, double fontSize) =>
+      Size(fontSize, fontSize);
+
+  /// Rebuilds [root] with every [WidgetSpan] child in the box it was measured
+  /// with.
+  ///
+  /// A text scaler resizes text and leaves widgets alone, so a placeholder
+  /// would keep its intrinsic size while the words around it shrank, and the
+  /// fit the probes found would not be the one on screen. Painting the child
+  /// into the measured box keeps the two in step.
+  InlineSpan _sizePlaceholders(InlineSpan root, double fontSize) {
+    if (_widgetSpans(root).isEmpty) return root;
+    final sizer = widget.placeholderSize ?? _squareEm;
+
+    InlineSpan rewrite(InlineSpan span) {
+      if (span is WidgetSpan) {
+        final box = sizer(span, fontSize);
+        return WidgetSpan(
+          alignment: span.alignment,
+          baseline: span.baseline,
+          style: span.style,
+          child: SizedBox(
+            width: box.width,
+            height: box.height,
+            child: FittedBox(fit: BoxFit.contain, child: span.child),
+          ),
+        );
+      }
+      if (span is TextSpan) {
+        final children = span.children;
+        if (children == null) return span;
+        return TextSpan(
+          text: span.text,
+          style: span.style,
+          recognizer: span.recognizer,
+          mouseCursor: span.mouseCursor,
+          onEnter: span.onEnter,
+          onExit: span.onExit,
+          semanticsLabel: span.semanticsLabel,
+          locale: span.locale,
+          spellOut: span.spellOut,
+          children: children.map(rewrite).toList(),
+        );
+      }
+      return span;
+    }
+
+    return rewrite(root);
+  }
+
   bool _checkTextFits(
     TextSpan text,
     TextScaler textScaler,
@@ -633,6 +736,7 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     required TextDirection textDirection,
     required TextWidthBasis textWidthBasis,
     required TextHeightBehavior? textHeightBehavior,
+    double? placeholderFontSize,
   }) {
     final painter = _textPainter
       ..textAlign = textAlign
@@ -658,8 +762,24 @@ class _AutoSizeTextState extends State<AutoSizeText> {
 
     painter
       ..text = text
-      ..maxLines = maxLines
-      ..layout(maxWidth: constraints.maxWidth);
+      ..maxLines = maxLines;
+
+    final spans = _widgetSpans(text);
+    if (spans.isNotEmpty) {
+      // After the text, never before: the painter counts its placeholders when
+      // the span tree is assigned, and the dimensions have to match that count.
+      // Without them it asserts on the first placeholder it reaches.
+      painter.setPlaceholderDimensions(
+        _placeholderDimensions(
+          spans,
+          placeholderFontSize ??
+              text.style?.fontSize ??
+              AutoSizeText._defaultFontSize,
+        ),
+      );
+    }
+
+    painter.layout(maxWidth: constraints.maxWidth);
 
     return !(painter.didExceedMaxLines ||
         painter.height > constraints.maxHeight ||
@@ -693,7 +813,7 @@ class _AutoSizeTextState extends State<AutoSizeText> {
       );
     }
     return Text.rich(
-      widget.textSpan!,
+      _sizePlaceholders(widget.textSpan!, fontSize),
       key: widget.textKey,
       style: style,
       strutStyle: widget.strutStyle,

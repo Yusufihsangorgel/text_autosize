@@ -65,6 +65,53 @@ class _DemoPageState extends State<DemoPage> {
             ),
           ),
           _Demo(
+            title: 'An icon in the sentence',
+            child: _box(
+              height: 60,
+              child: const AutoSizeText.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: 'Signed in as '),
+                    WidgetSpan(child: Icon(Icons.verified)),
+                    TextSpan(text: ' ada@example.com'),
+                  ],
+                ),
+                style: TextStyle(fontSize: 40),
+                maxLines: 1,
+              ),
+            ),
+          ),
+          _Demo(
+            title: 'A wide placeholder, through placeholderSize',
+            child: _box(
+              height: 60,
+              child: AutoSizeText.rich(
+                const TextSpan(
+                  children: [
+                    TextSpan(text: 'Build '),
+                    WidgetSpan(
+                      child: ColoredBox(
+                        color: Colors.green,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            'passing',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(text: ' on main'),
+                  ],
+                ),
+                style: const TextStyle(fontSize: 40),
+                maxLines: 1,
+                placeholderSize: (span, fontSize) =>
+                    Size(fontSize * 3.4, fontSize),
+              ),
+            ),
+          ),
+          _Demo(
             title: 'maxLines: 2',
             child: _box(
               height: 80,

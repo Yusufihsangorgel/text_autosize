@@ -1,3 +1,25 @@
+## 1.1.0
+
+- `AutoSizeText.rich` handles a `WidgetSpan`. It used to reach the assertion
+  `widget_span.dart: 'dimensions != null': is not true`, because a
+  `TextPainter` needs the size of every placeholder before it can lay one out
+  and nothing was giving it one. Each placeholder is now measured as a square
+  of the font size being tested, which is what an inline icon wants: it shrinks
+  with the sentence around it and it counts against the width while the size is
+  chosen.
+- The child is painted into that same square through a `FittedBox`. A text
+  scaler resizes glyphs and leaves widgets alone. Without this the icon would
+  keep its intrinsic size while the words shrank, and the fit found by the
+  probes would not be the fit on screen. Two tests pin the agreement, and
+  removing either half fails them.
+- `placeholderSize` takes a callback for anything that is not square, returning
+  a `Size` for a given span and font size. The same value is used for the
+  probes and for the painted box.
+- Rich text with no `WidgetSpan` in it takes the same path it always did.
+  `auto_size_text` still throws here; its issue 61 has been open since June
+  2020, answered by the maintainer with "I failed with my attempt to support
+  `WidgetSpans`".
+
 ## 1.0.3
 
 - Stop shipping `build/` inside the published archive. pub replaces
