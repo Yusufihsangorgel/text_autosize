@@ -1,3 +1,10 @@
+## 1.2.2
+
+- The three `textScaleFactor` deprecations now name the release that removes
+  them, 2.0.0, instead of "a future release". A deprecation without a version
+  is a promise with no date: it tells a caller to move but not when they have
+  to, and it makes the major impossible to plan.
+
 ## 1.2.1
 
 - A chart for the claim the package is built on. "Handles `TextScaler`

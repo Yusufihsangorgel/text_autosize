@@ -154,7 +154,7 @@ class AutoSizeText extends StatefulWidget {
     this.overflow,
     this.overflowReplacement,
     this.textScaler,
-    @Deprecated('Use textScaler instead. Will be removed in a future release.')
+    @Deprecated('Use textScaler instead. Will be removed in 2.0.0.')
     this.textScaleFactor,
     this.maxLines,
     this.semanticsLabel,
@@ -188,7 +188,7 @@ class AutoSizeText extends StatefulWidget {
     this.overflow,
     this.overflowReplacement,
     this.textScaler,
-    @Deprecated('Use textScaler instead. Will be removed in a future release.')
+    @Deprecated('Use textScaler instead. Will be removed in 2.0.0.')
     this.textScaleFactor,
     this.maxLines,
     this.semanticsLabel,
@@ -349,7 +349,7 @@ class AutoSizeText extends StatefulWidget {
   /// existing call sites still compile. A non-null value is treated as
   /// `TextScaler.linear(textScaleFactor)`. Setting both [textScaler] and
   /// [textScaleFactor] is not allowed.
-  @Deprecated('Use textScaler instead. Will be removed in a future release.')
+  @Deprecated('Use textScaler instead. Will be removed in 2.0.0.')
   final double? textScaleFactor;
 
   /// An optional maximum number of lines for the text to span, wrapping if
