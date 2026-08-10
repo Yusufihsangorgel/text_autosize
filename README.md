@@ -21,6 +21,20 @@ unconstrained, settles as one unwrapped line, and is then scaled down like a
 picture. What you get is one shrunken line, not text reflowed at a smaller
 size.
 
+![A chart. The solid line is what the platform paints against the font size
+asked for; the dashed line is a single 1.50x factor sampled at 40 pt. They meet
+at 40 and diverge below it: at the 14 pt the text is fitted to, the factor
+predicts 21 pt while the platform paints
+28.](https://raw.githubusercontent.com/Yusufihsangorgel/text_autosize/main/doc/scaler-curve.png)
+
+The two lines meet exactly where the factor was sampled, and nowhere else.
+Fitting *moves the text*, so a factor taken at the size it started at is being
+applied at a size it never described: here the label starts at 40 pt, settles
+at 14, and one factor is out by seven points. That is text overflowing a box it
+was just fitted to. Redraw the chart with
+`dart run tool/scaler_curve_figure.dart`, and see it move under a slider in
+`example/lib/main.dart`.
+
 **Instead of `auto_size_text`.** `TextScaler` does not appear anywhere in its
 `lib/`; it reads the deprecated scalar `textScaleFactor` instead, so nonlinear
 system font scaling is out of reach by construction. `WidgetSpan` is absent

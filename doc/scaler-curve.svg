@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="694" height="470" viewBox="0 0 694 470">
+  <rect width="100%" height="100%" fill="#14161C"/>
+  <text x="74.0" y="32" fill="#d8dee9" font-size="15" font-family="Menlo, monospace">a TextScaler is a function, not a multiplication</text>
+  <text x="74.0" y="52" fill="#8b93a3" font-size="11.5" font-family="Menlo, monospace">at a 2.0x setting, on a curve that gives small text the whole setting</text>
+  <text x="74.0" y="68" fill="#8b93a3" font-size="11.5" font-family="Menlo, monospace">and holds large text back — a stand-in for a platform table, not a copy of one</text>
+  <line x1="74.0" y1="404.0" x2="544.0" y2="404.0" stroke="#262c37" stroke-width="1"/>
+  <text x="64.0" y="408.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="end">0</text>
+  <line x1="74.0" y1="315.7647058823529" x2="544.0" y2="315.7647058823529" stroke="#262c37" stroke-width="1"/>
+  <text x="64.0" y="319.7647058823529" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="end">20</text>
+  <line x1="74.0" y1="227.52941176470588" x2="544.0" y2="227.52941176470588" stroke="#262c37" stroke-width="1"/>
+  <text x="64.0" y="231.52941176470588" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="end">40</text>
+  <line x1="74.0" y1="139.29411764705884" x2="544.0" y2="139.29411764705884" stroke="#262c37" stroke-width="1"/>
+  <text x="64.0" y="143.29411764705884" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="end">60</text>
+  <text x="74.0" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">0</text>
+  <text x="152.33333333333331" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">8</text>
+  <text x="230.66666666666666" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">16</text>
+  <text x="309.0" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">24</text>
+  <text x="387.3333333333333" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">32</text>
+  <text x="465.6666666666667" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">40</text>
+  <text x="544.0" y="424.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">48</text>
+  <text x="309.0" y="446.0" fill="#8b93a3" font-size="11" font-family="Menlo, monospace" text-anchor="middle">font size asked for (pt)</text>
+  <text x="20" y="254.0" fill="#8b93a3" font-size="11" font-family="Menlo, monospace" transform="rotate(-90 20 254.0)" text-anchor="middle">painted (pt)</text>
+  <path d="M 74.0,404.0 L 83.8,395.2 L 93.6,386.4 L 103.4,377.5 L 113.2,368.7 L 123.0,359.9 L 132.8,351.1 L 142.5,342.2 L 152.3,333.4 L 162.1,324.6 L 171.9,315.8 L 181.7,306.9 L 191.5,298.1 L 201.3,289.3 L 211.1,280.5 L 220.9,271.6 L 230.7,262.8 L 240.5,254.0 L 250.3,245.2 L 260.0,236.4 L 269.8,227.5 L 279.6,223.1 L 289.4,218.7 L 299.2,214.3 L 309.0,209.9 L 318.8,205.5 L 328.6,201.1 L 338.4,196.6 L 348.2,192.2 L 358.0,187.8 L 367.8,183.4 L 377.5,179.0 L 387.3,174.6 L 397.1,170.2 L 406.9,165.8 L 416.7,161.4 L 426.5,156.9 L 436.3,152.5 L 446.1,148.1 L 455.9,143.7 L 465.7,139.3 L 475.5,134.9 L 485.3,130.5 L 495.0,126.1 L 504.8,121.6 L 514.6,117.2 L 524.4,112.8 L 534.2,108.4 L 544.0,104.0" fill="none" stroke="#8ee0a1" stroke-width="2.5"/>
+  <path d="M 74.0,404.0 L 83.8,397.4 L 93.6,390.8 L 103.4,384.1 L 113.2,377.5 L 123.0,370.9 L 132.8,364.3 L 142.5,357.7 L 152.3,351.1 L 162.1,344.4 L 171.9,337.8 L 181.7,331.2 L 191.5,324.6 L 201.3,318.0 L 211.1,311.4 L 220.9,304.7 L 230.7,298.1 L 240.5,291.5 L 250.3,284.9 L 260.0,278.3 L 269.8,271.6 L 279.6,265.0 L 289.4,258.4 L 299.2,251.8 L 309.0,245.2 L 318.8,238.6 L 328.6,231.9 L 338.4,225.3 L 348.2,218.7 L 358.0,212.1 L 367.8,205.5 L 377.5,198.9 L 387.3,192.2 L 397.1,185.6 L 406.9,179.0 L 416.7,172.4 L 426.5,165.8 L 436.3,159.1 L 446.1,152.5 L 455.9,145.9 L 465.7,139.3 L 475.5,132.7 L 485.3,126.1 L 495.0,119.4 L 504.8,112.8 L 514.6,106.2 L 524.4,99.6 L 534.2,93.0 L 544.0,86.4" fill="none" stroke="#ff8f6b" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="465.6666666666667" y1="104.0" x2="465.6666666666667" y2="404.0" stroke="#8b93a3" stroke-width="1" stroke-dasharray="2 4"/>
+  <text x="465.6666666666667" y="96.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">sampled here</text>
+  <line x1="211.08333333333334" y1="104.0" x2="211.08333333333334" y2="404.0" stroke="#8b93a3" stroke-width="1" stroke-dasharray="2 4"/>
+  <text x="211.08333333333334" y="96.0" fill="#8b93a3" font-size="10.5" font-family="Menlo, monospace" text-anchor="middle">fitted here</text>
+  <circle cx="211.08333333333334" cy="280.47058823529414" r="4" fill="#8ee0a1"/>
+  <circle cx="211.08333333333334" cy="311.3529411764706" r="4" fill="#ff8f6b"/>
+  <text x="558.0" y="104.0" fill="#8ee0a1" font-size="11.5" font-family="Menlo, monospace">what is painted</text>
+  <text x="558.0" y="86.35294117647061" fill="#ff8f6b" font-size="11.5" font-family="Menlo, monospace">one factor, 1.50x</text>
+  <text x="558.0" y="315.3529411764706" fill="#ff8f6b" font-size="11" font-family="Menlo, monospace">predicts 21 pt</text>
+  <text x="558.0" y="284.47058823529414" fill="#8ee0a1" font-size="11" font-family="Menlo, monospace">paints 28 pt</text>
+  <text x="347.0" y="456.0" fill="#8b93a3" font-size="11" font-family="Menlo, monospace" text-anchor="middle">the factor is exact where it was taken and wrong everywhere else; fitting moves the text</text>
+</svg>

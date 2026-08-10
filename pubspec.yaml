@@ -3,7 +3,7 @@ description: >-
   Automatically resize text to fit its bounds: shrink the font until the text
   fits the available width, height and maxLines. TextScaler-aware,
   API-compatible with auto_size_text.
-version: 1.2.0
+version: 1.2.1
 repository: https://github.com/Yusufihsangorgel/text_autosize
 topics:
   - text
@@ -22,6 +22,10 @@ screenshots:
       stays inside the box while a fit derived from one factor overflows.
     path: doc/scaler.png
 
+  - description: >-
+      Why one scale factor is not enough: sampled at 40 pt it predicts 21 pt
+      for the fitted 14 pt text, where the platform paints 28.
+    path: doc/scaler-curve.png
 environment:
   sdk: ^3.8.0
   flutter: ">=3.32.0"
