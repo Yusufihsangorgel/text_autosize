@@ -130,6 +130,11 @@ final class AutoSizeGroup {
 /// * With [wrapWords] set to false, the longest-word check measures the words
 ///   with the base style only; per-span font sizes of rich text are not
 ///   considered in that check.
+/// * A [WidgetSpan] occupies a square of the surrounding span's logical font
+///   size (override with [placeholderSize]), not the child widget's intrinsic
+///   size. The child is scaled into that box through a [FittedBox]. The box
+///   is specified in the span tree's font-size coordinates and then scaled
+///   by the same [TextScaler] as the glyphs, including the autosize ratio.
 class AutoSizeText extends StatefulWidget {
   /// Creates an [AutoSizeText] widget.
   ///
@@ -169,6 +174,11 @@ class AutoSizeText extends StatefulWidget {
   /// The [textSpan] is measured with the fully resolved style, exactly as
   /// [Text.rich] renders it, and all font sizes within the span tree are
   /// scaled proportionally when the text is resized.
+  ///
+  /// A [WidgetSpan] in the tree is supported. It is not measured as the child
+  /// widget's intrinsic size — a [TextPainter] cannot layout a widget during
+  /// the fit search. See [placeholderSize] for the box it occupies and what
+  /// scales with the text.
   const AutoSizeText.rich(
     TextSpan this.textSpan, {
     super.key,
@@ -201,16 +211,29 @@ class AutoSizeText extends StatefulWidget {
   /// The default font size if none is specified.
   static const double _defaultFontSize = 14;
 
-  /// The box each [WidgetSpan] occupies, at the font size it is measured with.
+  /// The box each [WidgetSpan] occupies, in the span's logical font-size
+  /// coordinates.
   ///
-  /// A [TextPainter] cannot measure a widget, so it needs the size of every
-  /// [WidgetSpan] handed to it before layout. Left null, each placeholder is a
-  /// square of the current font size, which is what an inline icon or badge
-  /// wants: it grows and shrinks with the text around it.
+  /// A [TextPainter] cannot measure a widget, so every [WidgetSpan] has to
+  /// declare a size before the text around it can be laid out. Left null,
+  /// each placeholder is a square of the span's logical font size — one em,
+  /// which is what an inline icon wants.
   ///
-  /// Return a different [Size] to break out of the square. The size is used
-  /// for the fit probes and for the box the child is painted into, so
-  /// measurement and paint cannot disagree.
+  /// `fontSize` is the span's own [TextStyle.fontSize] (inherited from the
+  /// surrounding span or from this widget's [style]), *before* autosize and
+  /// *before* the user's [TextScaler]. The returned box is then scaled by
+  /// the same factor Flutter applies to [WidgetSpan] children,
+  /// `textScaler.scale(fontSize) / fontSize`, so it shrinks when the text
+  /// shrinks and grows with the user's font scale.
+  ///
+  /// Return a different [Size] to break out of the square, in those same em
+  /// units. `(span, fontSize) => Size(fontSize * 3, fontSize)` is three ems
+  /// wide and one em tall.
+  ///
+  /// The child's intrinsic size is ignored: a 24 px icon and a 200 px chip
+  /// occupy the same box if they share a [placeholderSize]. The child is
+  /// fitted into the box through a [FittedBox]. Supply a wider box for
+  /// something that should not be square.
   ///
   /// Only used by [AutoSizeText.rich], and only when the span tree holds a
   /// [WidgetSpan].
@@ -587,10 +610,6 @@ class _AutoSizeTextState extends State<AutoSizeText> {
         textDirection: textDirection,
         textWidthBasis: textWidthBasis,
         textHeightBehavior: textHeightBehavior,
-        // The span tree keeps its own font sizes and is resized by the ratio
-        // scaler, so the candidate size is what the placeholders have to match
-        // rather than whatever the root style carries.
-        placeholderFontSize: fontSize,
       );
     }
 
@@ -645,53 +664,100 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     return (fontSize, lastValueFits);
   }
 
-  /// Every [WidgetSpan] in [root], in the order a painter lays them out.
-  static List<WidgetSpan> _widgetSpans(InlineSpan root) {
-    final found = <WidgetSpan>[];
+  /// Walks [root] in the order a painter lays placeholders out, carrying the
+  /// inherited logical font size. Matches the stack
+  /// [WidgetSpan.extractFromInlineSpan] uses when Flutter scales the painted
+  /// child.
+  static void _forEachWidgetSpan(
+    InlineSpan root,
+    double rootFontSize,
+    void Function(WidgetSpan span, double fontSize) visit,
+  ) {
+    void walk(InlineSpan span, double inherited) {
+      final fontSize = span.style?.fontSize ?? inherited;
+      if (span is WidgetSpan) {
+        visit(span, fontSize);
+      }
+      span.visitDirectChildren((child) {
+        walk(child, fontSize);
+        return true;
+      });
+    }
+
+    walk(root, rootFontSize);
+  }
+
+  static bool _hasWidgetSpan(InlineSpan root) {
+    var found = false;
     root.visitChildren((span) {
-      if (span is WidgetSpan) found.add(span);
+      if (span is WidgetSpan) {
+        found = true;
+        return false;
+      }
       return true;
     });
     return found;
   }
 
-  /// The box each [WidgetSpan] in [spans] occupies at [fontSize].
+  /// The uniform scale Flutter applies to a [WidgetSpan] child whose logical
+  /// font size is [fontSize]. Matches [WidgetSpan.extractFromInlineSpan].
+  static double _inlineWidgetScale(TextScaler textScaler, double fontSize) {
+    return fontSize == 0 ? 0.0 : textScaler.scale(fontSize) / fontSize;
+  }
+
+  /// The box each [WidgetSpan] occupies after Flutter's widget-span scaler.
+  ///
+  /// The [SizedBox] on the paint side is in the span's logical font-size
+  /// coordinates. [TextPainter] does not apply that scaler itself, so the
+  /// probes have to pass the already-scaled size or they would disagree
+  /// with the line the [Text] actually lays out.
   List<PlaceholderDimensions> _placeholderDimensions(
-    List<WidgetSpan> spans,
-    double fontSize,
+    InlineSpan root,
+    double rootFontSize,
+    TextScaler textScaler,
   ) {
     final sizer = widget.placeholderSize ?? _squareEm;
-    return [
-      for (final span in spans)
+    final dimensions = <PlaceholderDimensions>[];
+    _forEachWidgetSpan(root, rootFontSize, (span, fontSize) {
+      final visual =
+          sizer(span, fontSize) * _inlineWidgetScale(textScaler, fontSize);
+      dimensions.add(
         PlaceholderDimensions(
-          size: sizer(span, fontSize),
+          size: visual,
           alignment: span.alignment,
           baseline: span.baseline,
           // A baseline-aligned placeholder needs a distance from its top to
           // the baseline. Sitting the box on the baseline is what an inline
-          // icon does, and it is what the paint side does below.
+          // icon does.
           baselineOffset: span.alignment == PlaceholderAlignment.baseline
-              ? sizer(span, fontSize).height
+              ? visual.height
               : null,
         ),
-    ];
+      );
+    });
+    return dimensions;
   }
 
   static Size _squareEm(WidgetSpan span, double fontSize) =>
       Size(fontSize, fontSize);
 
-  /// Rebuilds [root] with every [WidgetSpan] child in the box it was measured
-  /// with.
+  /// Rebuilds [root] with every [WidgetSpan] child in a box of the span's
+  /// logical font size.
   ///
-  /// A text scaler resizes text and leaves widgets alone, so a placeholder
-  /// would keep its intrinsic size while the words around it shrank, and the
-  /// fit the probes found would not be the one on screen. Painting the child
-  /// into the measured box keeps the two in step.
-  InlineSpan _sizePlaceholders(InlineSpan root, double fontSize) {
-    if (_widgetSpans(root).isEmpty) return root;
+  /// Flutter then scales that box by `textScaler.scale(fontSize) / fontSize`,
+  /// which is the same factor the fit probes applied to the placeholder
+  /// dimensions. Wrapping at the *candidate* size instead would shrink
+  /// twice: once in the [SizedBox], once in Flutter's widget-span scaler.
+  ///
+  /// A [FittedBox] still has to swallow the child's intrinsic size. Without
+  /// it a 24 px icon keeps its size while the words shrink, and the fit the
+  /// probes found is not the one on screen.
+  InlineSpan _sizePlaceholders(InlineSpan root, double rootFontSize) {
+    if (!_hasWidgetSpan(root)) return root;
     final sizer = widget.placeholderSize ?? _squareEm;
 
-    InlineSpan rewrite(InlineSpan span) {
+    InlineSpan rewrite(InlineSpan span, double inherited) {
+      final fontSize = span.style?.fontSize ?? inherited;
       if (span is WidgetSpan) {
         final box = sizer(span, fontSize);
         return WidgetSpan(
@@ -716,15 +782,16 @@ class _AutoSizeTextState extends State<AutoSizeText> {
           onEnter: span.onEnter,
           onExit: span.onExit,
           semanticsLabel: span.semanticsLabel,
+          semanticsIdentifier: span.semanticsIdentifier,
           locale: span.locale,
           spellOut: span.spellOut,
-          children: children.map(rewrite).toList(),
+          children: [for (final child in children) rewrite(child, fontSize)],
         );
       }
       return span;
     }
 
-    return rewrite(root);
+    return rewrite(root, rootFontSize);
   }
 
   bool _checkTextFits(
@@ -736,7 +803,6 @@ class _AutoSizeTextState extends State<AutoSizeText> {
     required TextDirection textDirection,
     required TextWidthBasis textWidthBasis,
     required TextHeightBehavior? textHeightBehavior,
-    double? placeholderFontSize,
   }) {
     final painter = _textPainter
       ..textAlign = textAlign
@@ -764,19 +830,24 @@ class _AutoSizeTextState extends State<AutoSizeText> {
       ..text = text
       ..maxLines = maxLines;
 
-    final spans = _widgetSpans(text);
-    if (spans.isNotEmpty) {
+    final dimensions = _placeholderDimensions(
+      text,
+      text.style?.fontSize ?? AutoSizeText._defaultFontSize,
+      textScaler,
+    );
+    if (dimensions.isNotEmpty) {
       // After the text, never before: the painter counts its placeholders when
       // the span tree is assigned, and the dimensions have to match that count.
-      // Without them it asserts on the first placeholder it reaches.
-      painter.setPlaceholderDimensions(
-        _placeholderDimensions(
-          spans,
-          placeholderFontSize ??
-              text.style?.fontSize ??
-              AutoSizeText._defaultFontSize,
-        ),
-      );
+      // Without them WidgetSpan.build asserts on the first placeholder it
+      // reaches.
+      painter.setPlaceholderDimensions(dimensions);
+      if (!widget.wrapWords) {
+        for (final dimension in dimensions) {
+          if (dimension.size.width > constraints.maxWidth) {
+            return false;
+          }
+        }
+      }
     }
 
     painter.layout(maxWidth: constraints.maxWidth);
@@ -813,7 +884,7 @@ class _AutoSizeTextState extends State<AutoSizeText> {
       );
     }
     return Text.rich(
-      _sizePlaceholders(widget.textSpan!, fontSize),
+      _sizePlaceholders(widget.textSpan!, style.fontSize!),
       key: widget.textKey,
       style: style,
       strutStyle: widget.strutStyle,

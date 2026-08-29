@@ -66,8 +66,13 @@ failed, that widget is shown instead. `overflow` and
 `overflowReplacement` cannot both be set.
 
 **`AutoSizeText.rich`.** Every span is scaled by the same factor. A
-`WidgetSpan` is measured as a square of the candidate size (override
-with `placeholderSize`) and painted into that box through a `FittedBox`.
+`WidgetSpan` occupies a square of the surrounding span's logical font
+size (override with `placeholderSize`, in those same em units) and is
+painted into that box through a `FittedBox`. The child's intrinsic size
+is ignored. The box is then scaled by the same `TextScaler` as the
+glyphs; wrapping at the candidate size instead would shrink twice,
+because `Text.rich` already scales `WidgetSpan` children by
+`textScaler.scale(fontSize) / fontSize`.
 
 ## Mistakes
 

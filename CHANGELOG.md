@@ -1,3 +1,25 @@
+## 1.3.0
+
+- A `WidgetSpan` inside `AutoSizeText.rich` is measured and painted in the
+  coordinate space Flutter uses for inline widgets. 1.1.0 wrapped each child
+  in a `SizedBox` of the *candidate* size and then handed that tree to
+  `Text.rich`, which scales `WidgetSpan` children by
+  `textScaler.scale(fontSize) / fontSize` — and `fontSize` there is the
+  span's declared size, not the candidate. Shrinking therefore applied twice:
+  a span that settled at half its preferred size painted the icon at a
+  quarter. The box is now specified in the span's logical font-size units,
+  the probes scale it by the same factor
+  `WidgetSpan.extractFromInlineSpan` uses, and a `FittedBox` still forces
+  the child's intrinsic size into that box so measurement and paint cannot
+  drift. Tests read the `RenderParagraph` child's size, which is the
+  geometry after that scaler; asserting on the inner `SizedBox` width hid
+  the double-shrink.
+- The documented limitation is that the child's intrinsic size is ignored. An
+  80 px chip occupies one em unless `placeholderSize` returns a wider box,
+  and a test holds that so it cannot become a surprise. `placeholderSize`
+  receives the span's logical font size, before autosize and before the
+  user's `TextScaler`, and returns a box in those same em units.
+
 ## 1.2.2
 
 - The three `textScaleFactor` deprecations now name the release that removes

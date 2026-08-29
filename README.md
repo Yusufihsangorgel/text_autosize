@@ -64,7 +64,8 @@ readable when someone scales their fonts up.
 * `minFontSize`, `maxFontSize` and `stepGranularity` control the search range.
 * `presetFontSizes` restricts the text to a fixed list of sizes.
 * `AutoSizeGroup` keeps several texts at the same size.
-* `AutoSizeText.rich` resizes a whole `TextSpan` tree proportionally.
+* `AutoSizeText.rich` resizes a whole `TextSpan` tree proportionally,
+  including inline `WidgetSpan`s.
 * `overflowReplacement` swaps in another widget when nothing fits.
 * `textScaler` aware: the fitted size accounts for the user's font scale.
 * Works inside `SelectionArea`, since it builds a regular `Text` widget.
@@ -178,13 +179,17 @@ AutoSizeText.rich(
 )
 ```
 
-A `TextPainter` cannot measure a widget, and a text scaler resizes glyphs while
-leaving widgets alone. Both are handled here: each placeholder is measured as a
-square of the size being tested, and the child is painted into that same square
-through a `FittedBox`, which is what keeps the fit the probes found and the fit
-on screen from drifting apart.
+A `TextPainter` cannot measure a widget. The honest substitute is one em: each
+placeholder is a square of the surrounding span's logical font size, then
+scaled by the same `TextScaler` as the glyphs (including the autosize ratio).
+The child is painted into that box through a `FittedBox`. The child's
+intrinsic size is ignored — a 24 px icon and an 80 px chip occupy the same
+one-em box. That is the limitation, and it is what keeps the fit the probes
+found and the fit on screen from drifting apart.
 
-Pass `placeholderSize` for something that is not square:
+Pass `placeholderSize` for something that is not square. The `fontSize`
+argument is the span's logical size, before autosize and before the user's
+scaler; return a box in those same em units:
 
 ```dart
 AutoSizeText.rich(
@@ -320,6 +325,9 @@ therefore performs O(log n) text layouts for n candidate sizes, and a single
 * With `wrapWords: false`, the longest-word check measures the words with the
   base style only. Per-span font sizes of rich text are not considered in
   that check. This also matches `auto_size_text`.
+* A `WidgetSpan` occupies one em of the surrounding span (override with
+  `placeholderSize`), not the child widget's intrinsic size. The child is
+  scaled into that box. See [Icons and badges inside the text](#icons-and-badges-inside-the-text).
 
 ## Credits
 
