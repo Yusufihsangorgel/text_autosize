@@ -1,3 +1,22 @@
+## 1.3.1
+
+- The README now meets a reader who arrives with a deprecation, not a shopping
+  list. `auto_size_text` 3.0.0 analyzed against Flutter 3.41.2 prints six
+  `deprecated_member_use` infos from its own `lib/src/auto_size_text.dart`:
+  the Flutter 3.12 `textScaleFactor` / `textScaleFactorOf` messages, quoted in
+  full in the README so a search for the analyzer text lands. Those point into
+  the package; an app that only depends on it does not see them, and passing
+  `textScaleFactor:` to its `AutoSizeText` is still silent. The crash people
+  also land with is a `WidgetSpan` in `AutoSizeText.rich`, captured by pumping
+  the incumbent:
+  `'package:flutter/src/widgets/widget_span.dart': Failed assertion: line 163 pos 12: 'dimensions != null': is not true.`
+  The migration section quotes both, the import change, and what does not
+  carry over: this package *does* deprecate `textScaleFactor` (the call site
+  that was silent now prints the 2.0.0 removal message), the inner `Text`
+  stores a logical size, a nonlinear scaler can change the fitted size,
+  `AutoSizeGroup` is `final`, and a `WidgetSpan` occupies one em rather than
+  the child's intrinsic size. Docs only; no library change.
+
 ## 1.3.0
 
 - A `WidgetSpan` inside `AutoSizeText.rich` is measured and painted in the

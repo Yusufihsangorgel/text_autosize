@@ -5,9 +5,12 @@
 A Flutter widget that automatically resizes text to fit within its bounds.
 
 The API follows the `auto_size_text` package by Simon Leier, and existing code
-migrates by changing the import. On top of the familiar API, this package is
-built against current Flutter releases and handles `TextScaler` correctly,
-including nonlinear system font scaling.
+migrates by changing the import. If the thing that brought you here is a
+`textScaleFactor` deprecation or a `WidgetSpan` assertion, the quoted strings
+and the edges that do not carry over are in
+[Migration from auto_size_text](#migration-from-auto_size_text). On top of the
+familiar API, this package is built against current Flutter releases and
+handles `TextScaler` correctly, including nonlinear system font scaling.
 
 ![demo](doc/demo.gif)
 
@@ -244,58 +247,92 @@ and this particular difference disappears.
 
 ## Migration from auto_size_text
 
-1. Replace the dependency:
+The usual arrival is one of these strings, not a feature list.
 
-   ```sh
-   flutter pub remove auto_size_text
-   flutter pub add text_autosize
-   ```
+`auto_size_text` 3.0.0, analyzed against Flutter 3.41.2, prints six
+`deprecated_member_use` infos from its own `lib/src/auto_size_text.dart`
+(a dartdoc link to `MediaQueryData.textScaleFactor`,
+`MediaQuery.textScaleFactorOf`, two `TextPainter` constructors, `Text`,
+and `Text.rich`):
 
-2. Replace the import. The class names `AutoSizeText` and `AutoSizeGroup` are
-   unchanged:
+```
+'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre
+```
 
-   ```dart
-   import 'package:text_autosize/text_autosize.dart';
-   ```
+and the `MediaQuery` twin:
 
-3. Optionally move `textScaleFactor` to `textScaler`. This step is no longer
-   required to compile: `textScaleFactor` still works and is treated as
-   `TextScaler.linear(factor)`. It is deprecated and will be removed in a
-   future release, so prefer `textScaler`:
+```
+'textScaleFactorOf' is deprecated and shouldn't be used. Use textScalerOf instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre
+```
 
-   ```dart
-   // still compiles, deprecated
-   AutoSizeText('Hello', textScaleFactor: 1.5)
-   // preferred
-   AutoSizeText('Hello', textScaler: TextScaler.linear(1.5))
-   ```
+Those point into the package, not into the call site. An app that only
+*depends* on `auto_size_text` does not print them: `flutter analyze` of a
+widget that passes `textScaleFactor:` to the incumbent's `AutoSizeText` is
+clean, because that parameter was never marked `@Deprecated`. The first
+message *does* appear if the same argument is passed to Flutter's `Text`.
+Either way it means the same thing. Flutter replaced the scalar with a
+`TextScaler` in 3.12 because a factor is only a sample of the scale curve at
+one size, and fitting *moves* the size. After an upgrade that turned system
+font scaling nonlinear, the text that used to fit can overflow the box it
+was just sized for. There is no analyzer message for that overflow.
 
-   Setting both `textScaler` and `textScaleFactor` on the same widget is not
-   allowed and asserts in debug builds.
+The other string is a crash, not a deprecation. Pumping `AutoSizeText.rich`
+with a `WidgetSpan` on `auto_size_text` 3.0.0, still against Flutter 3.41.2,
+throws:
 
-Intentional behavior differences from `auto_size_text` 3.0.0:
+```
+'package:flutter/src/widgets/widget_span.dart': Failed assertion: line 163 pos 12: 'dimensions != null': is not true.
+```
 
-* The built `Text` carries the logical font size plus a `TextScaler`, instead
-  of a pre-scaled font size with scaling disabled. The rendered pixels are
-  identical; only the internal representation differs. Migrated tests that
-  look up the inner `Text` through `textKey` and assert on `style.fontSize`
-  see the logical value now.
-* With a linear scaler, `minFontSize`, `maxFontSize` and `presetFontSizes`
-  produce the same rendered size as the original package. The behavior only
-  differs under a nonlinear scaler (for example Android 14 system font
-  scaling), where the fitted size is computed with the actual scaler instead
-  of a single factor.
-* Rich text is measured with the fully resolved style, exactly as `Text.rich`
-  renders it. The original measured the span's own style only, which could
-  mismeasure spans that inherit their size from `DefaultTextStyle`.
-* Measurement resolves `textAlign` and `textDirection` the same way the
-  rendered `Text` does, instead of assuming left-aligned, left-to-right text.
-* An `AutoSizeGroup` synchronizes the logical font size of its members. Each
-  member still applies its own `TextScaler` when rendering.
-* `presetFontSizes` must be in descending order; this is now checked with an
-  assert instead of being silently required.
+That is issue #61, open since June 2020.
+
+The swap is the import. Names are unchanged:
+
+```dart
+import 'package:text_autosize/text_autosize.dart';
+```
+
+```sh
+flutter pub remove auto_size_text
+flutter pub add text_autosize
+```
+
+The names match. These do not carry over:
+
+* `textScaleFactor:` on `AutoSizeText` still compiles and is treated as
+  `TextScaler.linear(factor)`, but this package *does* deprecate it. The
+  call site that was silent now prints
+
+  ```
+  'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Will be removed in 2.0.0
+  ```
+
+  Prefer `textScaler: TextScaler.linear(factor)`. Setting both asserts.
+  The three `@Deprecated` marks name 2.0.0; there is no "future release"
+  left in the message.
+* The built `Text` carries the logical font size plus a `TextScaler`, not a
+  pre-scaled `fontSize` with scaling disabled. Tests that look up the inner
+  `Text` through `textKey` and assert on `style.fontSize` see the logical
+  value now.
+* Under a linear scaler, `minFontSize`, `maxFontSize` and `presetFontSizes`
+  render the same size as the original. Under a nonlinear scaler they can
+  change: that is the overflow the deprecation was describing, measured with
+  the actual scaler instead of one factor sampled at the starting size.
+* Rich text is measured with the fully resolved style, as `Text.rich` paints
+  it. The original measured the span's own style only, so spans that inherit
+  size from `DefaultTextStyle` can settle at a different size.
+* `textAlign` and `textDirection` resolve the way the rendered `Text` does,
+  instead of assuming left-aligned, left-to-right text.
+* `AutoSizeGroup` is `final`. Subclassing the incumbent's group will not
+  compile. The group still synchronizes logical size, and each member still
+  applies its own `TextScaler`.
+* `presetFontSizes` must be strictly descending. The original required that
+  silently; this package asserts it.
+* A `WidgetSpan` no longer throws. It occupies one em of the surrounding
+  span (override with `placeholderSize`), not the child's intrinsic size.
+  See [Icons and badges inside the text](#icons-and-badges-inside-the-text).
 * `textWidthBasis`, `textHeightBehavior` and `selectionColor` are passed
-  through to the built `Text`.
+  through to the built `Text`. They did not exist on the original.
 
 ## How it works
 
