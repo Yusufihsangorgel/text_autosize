@@ -122,9 +122,8 @@ Future<void> _capture(WidgetTester tester) async {
     final image = await boundary.toImage(pixelRatio: 2);
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      await File(
-        '${_frameDir.path}/$name',
-      ).writeAsBytes(data!.buffer.asUint8List());
+      await File('${_frameDir.path}/$name')
+          .writeAsBytes(data!.buffer.asUint8List());
     } finally {
       image.dispose();
     }
