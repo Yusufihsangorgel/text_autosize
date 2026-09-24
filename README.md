@@ -77,6 +77,10 @@ readable when someone scales their fonts up.
 
 Requires Flutter 3.32 or later.
 
+```sh
+flutter pub add text_autosize
+```
+
 ```dart
 import 'package:text_autosize/text_autosize.dart';
 
