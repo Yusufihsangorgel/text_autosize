@@ -1,6 +1,6 @@
 # Package engineering rules: text_autosize
 
-Rules-Version: text_autosize/a5cfb183fdeb3e7fd9da684bd9c2b9eb3712bf173df8aec258179653fa67a886
+Rules-Version: text_autosize/fcc1e947f2726261a5bdc82d68fedb2e567689f43a9644e1bb44a71f8fbc3f8b
 Core-Version: 1
 Core-Digest: 1825fa7ff346dca23e65b1b3bf9b2e3e06959f1414bae9952d596d2f62f09b8f
 Survey-Digest: f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e
@@ -79,7 +79,7 @@ Existing violation: none
 ### text_autosize/TA-07 [MUST]
 Keep the strict analyzer settings (strict-casts, strict-inference, strict-raw-types) and the lints public_member_api_docs, directives_ordering, prefer_final_locals and unnecessary_lambdas.
 Reason: This package uses the strictest analysis settings of the six packages; loosening them creates debt.
-Evidence: analysis_options.yaml:1-15
+Evidence: analysis_options.yaml:1-14
 Evidence role: current-pattern
 Existing violation: none
 
