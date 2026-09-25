@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "package": "text_autosize",
+  "survey_digest": "f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e",
+  "items": [
+    {
+      "id": "text_autosize-D001",
+      "source_index": 1,
+      "source_item_digest": "aaed1c712c608af825e0c65affe1092c7b795e9b5b78e264a649305e04879fb9",
+      "baseline_revision": "dd5eda5",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/src/auto_size_text.dart",
+          "lines": "162,201,375-376,463-464,515-516"
+        },
+        {
+          "path": "test/text_scale_factor_test.dart",
+          "lines": "18,46,70"
+        }
+      ],
+      "kind": "planned removal (deprecation)",
+      "observation": "textScaleFactor is marked 'Will be removed in 2.0.0.'. Two ignores and text_scale_factor_test depend on this parameter.",
+      "certainty": "confirmed",
+      "proposed_fix": "In 2.0.0 remove the parameter, these two ignores and text_scale_factor_test; write a migration note in the CHANGELOG. The ignore at :946 depends on the Flutter TextScaler.textScaleFactor and stays separate.",
+      "related_rule_ids": [
+        "text_autosize/TA-01",
+        "text_autosize/TA-05"
+      ],
+      "issue_url": null,
+      "closure_criteria": "The 2.0.0 release removes the textScaleFactor parameter, its two ignores and text_scale_factor_test, and the CHANGELOG carries a migration note. The ignore for the Flutter TextScaler override at line 946 stays untouched.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "text_autosize-D002",
+      "source_index": 2,
+      "source_item_digest": "a10537362bd1a632915b1e7d2efbec1d20f6666ac6b62c896119d17661b64cae",
+      "baseline_revision": "dd5eda5",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/src/auto_size_text.dart",
+          "lines": "589,899"
+        }
+      ],
+      "kind": "duplicate logic",
+      "observation": "The degenerate base check (`!isFinite || <= 0`) is hand repeated in two places.",
+      "certainty": "confirmed",
+      "proposed_fix": "Write a single private helper function; let both call sites use it.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "One private helper holds the degenerate base check and both call sites use it.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "text_autosize-D003",
+      "source_index": 3,
+      "source_item_digest": "0d8c47d77a73b99865d00ffafa18d97cf186d22d97b020e0ccc817bf98d94a92",
+      "baseline_revision": "dd5eda5",
+      "status": "open",
+      "size": "medium",
+      "locations": [
+        {
+          "path": "lib/src/auto_size_text.dart",
+          "lines": "560-665"
+        }
+      ],
+      "kind": "cognitive complexity (J2)",
+      "observation": "_calculateFontSize spans 105 lines: style resolution, preset and step branches, and binary search in one function. The search is a pure operation yet cannot be tested separately.",
+      "certainty": "confirmed",
+      "proposed_fix": "Extract the binary search over the candidate list into a pure function that takes the fit check as a callback. Widget tests act as the safety net; add unit tests for boundary cases.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "The binary search over candidate sizes is a pure function taking the fit check as a callback, with unit tests for boundary cases. The widget tests keep passing.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "text_autosize-D004",
+      "source_index": 4,
+      "source_item_digest": "35bd2cc629d57dbd8315a50d982e2fe212b6b682b9d0198bf88016efcdf1b785",
+      "baseline_revision": "dd5eda5",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/src/auto_size_text.dart",
+          "lines": "817"
+        }
+      ],
+      "kind": "unnecessary allocation",
+      "observation": "When wrapWords is false a new RegExp (whitespace splitter) is created on every probe.",
+      "certainty": "confirmed",
+      "proposed_fix": "Move the RegExp into a static final field.",
+      "related_rule_ids": [
+        "text_autosize/TA-10"
+      ],
+      "issue_url": null,
+      "closure_criteria": "The whitespace splitter RegExp lives in a static final field and no RegExp is allocated per probe.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "text_autosize-D005",
+      "source_index": 5,
+      "source_item_digest": "3a4f435e8c6c5e79073180a4c5f805cda30485ea62aa8f28abd8a064ceb99c48",
+      "baseline_revision": "dd5eda5",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "example/pubspec.yaml",
+          "lines": null
+        },
+        {
+          "path": "pubspec.yaml",
+          "lines": null
+        }
+      ],
+      "kind": "configuration drift",
+      "observation": "The example declares flutter >=3.22.0 while the package requires >=3.32.0. The sdk ^3.8.0 constraint of the example also disagrees with the 3.22 base.",
+      "certainty": "confirmed",
+      "proposed_fix": "Align the example flutter base to 3.32.0.",
+      "related_rule_ids": [
+        "text_autosize/TA-08"
+      ],
+      "issue_url": null,
+      "closure_criteria": "example/pubspec.yaml declares flutter >=3.32.0 and an sdk constraint consistent with the package floor.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    }
+  ]
+}
