@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:text_autosize/text_autosize.dart';
 
 void main() {
-  runApp(const MaterialApp(home: Scaffold(body: Center(child: MenuTile()))));
+  runApp(
+    const MaterialApp(
+      home: Scaffold(body: Center(child: MenuTile())),
+    ),
+  );
 }
 
 /// A tile with two labels that share one font size.
