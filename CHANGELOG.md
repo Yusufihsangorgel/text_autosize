@@ -4,6 +4,9 @@
   releases. The comparison with `auto_size_text` now says what this package
   does, and the Flutter source line references name the version they match.
 - Removed an empty "Demo" heading from the README.
+- The README now has a table for choosing between this package and
+  `auto_size_text`, and `doc/migrating-from-auto_size_text.md` lists the
+  parameter mapping and the differences. Docs only.
 
 ## 1.3.1
 

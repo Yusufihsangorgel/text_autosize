@@ -38,16 +38,22 @@ was just fitted to. Redraw the chart with
 `dart run tool/scaler_curve_figure.dart`, and see it move under a slider in
 `example/lib/main.dart`.
 
-**Instead of `auto_size_text`.** This package measures text with `TextScaler`
-and supports `WidgetSpan` in `AutoSizeText.rich`.
+**Instead of `auto_size_text`.** The two packages share an API and the same
+binary search over candidate sizes. The choice comes down to a few concrete
+cases, checked here against `auto_size_text` 3.0.0.
 
-**Reach for it when**
+| Your situation | Pick | Why |
+| --- | --- | --- |
+| Labels in fixed boxes, and users may set a large or nonlinear system font size | `text_autosize` | Every candidate size is measured with the `TextScaler`. `auto_size_text` measures with the one number from `MediaQuery.textScaleFactorOf`. |
+| Icons or chips inside the sentence, through `AutoSizeText.rich` | `text_autosize` | A `WidgetSpan` is measured as one em box, and `placeholderSize` changes the box. Pumping one in `auto_size_text` fails an assertion. |
+| You need `textWidthBasis`, `textHeightBehavior` or `selectionColor` on the fitted text | `text_autosize` | They are parameters here. `auto_size_text` has none of the three. |
+| The app is pinned to a Flutter older than 3.32 | `auto_size_text` | This package requires Flutter 3.32 and Dart 3.8. `auto_size_text` declares Dart `>=2.12.0 <3.0.0`. |
+| An app already uses `auto_size_text` on plain strings, without nonlinear font scaling, and nothing overflows | Either | Under a linear scaler both step through the same candidate sizes. Leaving it alone is fine. Moving costs an import change and a look at the [differences](doc/migrating-from-auto_size_text.md#differences), such as tests that read `style.fontSize` from the built `Text`. |
 
-- A label has to fit a fixed box and your users may have large system font
-  sizes set.
-- Text mixes inline widgets such as icons or chips with words and still has to
-  fit.
-- Several labels need to settle on one shared size through `AutoSizeGroup`.
+Moving an app over, with a table of every parameter and a before and after
+example: [Migrating from auto_size_text](doc/migrating-from-auto_size_text.md).
+The short version is in [Migration from auto_size_text](#migration-from-auto_size_text)
+below.
 
 Skip it when the text is allowed to wrap or scroll: a plain `Text` that can
 grow is easier to reason about than any fitting algorithm, and it stays
