@@ -1,3 +1,10 @@
+## 1.3.2
+
+- The README no longer quotes another package's maintainer or dates its
+  releases. The comparison with `auto_size_text` now says what this package
+  does, and the Flutter source line references name the version they match.
+- Removed an empty "Demo" heading from the README.
+
 ## 1.3.1
 
 - The README now meets a reader who arrives with a deprecation, not a shopping

@@ -17,11 +17,11 @@ handles `TextScaler` correctly, including nonlinear system font scaling.
 ## Why this instead of what you already have
 
 **Instead of `FittedBox`.** It has no concept of font size, only `fit`,
-`alignment` and `clipBehavior` (`widgets/basic.dart:2091`). Its
-`performLayout` lays the child out with `const BoxConstraints()`
-(`rendering/proxy_box.dart:2922`), so the text always measures itself
-unconstrained, settles as one unwrapped line, and is then scaled down like a
-picture. What you get is one shrunken line, not text reflowed at a smaller
+`alignment` and `clipBehavior` (`widgets/basic.dart:2091` in Flutter 3.41.2).
+Its `performLayout` lays the child out with `const BoxConstraints()`
+(`rendering/proxy_box.dart:2922`, same version). That means the text always measures
+itself unconstrained, settles as one unwrapped line, and is then scaled down
+like a picture. What you get is one shrunken line, not text reflowed at a smaller
 size.
 
 ![A chart. The solid line is what the platform paints against the font size
@@ -38,13 +38,8 @@ was just fitted to. Redraw the chart with
 `dart run tool/scaler_curve_figure.dart`, and see it move under a slider in
 `example/lib/main.dart`.
 
-**Instead of `auto_size_text`.** `TextScaler` does not appear anywhere in its
-`lib/`; it reads the deprecated scalar `textScaleFactor` instead, so nonlinear
-system font scaling is out of reach by construction. `WidgetSpan` is absent
-too, which is issue #61, open since June 2020 and still landing on
-`assert(dimensions != null)` (`widgets/widget_span.dart:163`). The maintainer
-wrote there on 2020-09-27: "unfortunately I failed with my attempt to support
-`WidgetSpans`." The last release was October 2021.
+**Instead of `auto_size_text`.** This package measures text with `TextScaler`
+and supports `WidgetSpan` in `AutoSizeText.rich`.
 
 **Reach for it when**
 
@@ -57,9 +52,6 @@ wrote there on 2020-09-27: "unfortunately I failed with my attempt to support
 Skip it when the text is allowed to wrap or scroll: a plain `Text` that can
 grow is easier to reason about than any fitting algorithm, and it stays
 readable when someone scales their fonts up.
-
-## Demo
-
 
 ## Features
 
@@ -202,10 +194,8 @@ AutoSizeText.rich(
 )
 ```
 
-`auto_size_text` throws on this. Its `#61` has been open since June 2020, and
-the maintainer answered it with "I failed with my attempt to support
-`WidgetSpans`". The assertion you get there is
-`widget_span.dart: 'dimensions != null': is not true`.
+For what `auto_size_text` does with a `WidgetSpan`, see
+[Migration from auto_size_text](#migration-from-auto_size_text).
 
 ## System font scale
 
@@ -283,8 +273,6 @@ throws:
 ```
 'package:flutter/src/widgets/widget_span.dart': Failed assertion: line 163 pos 12: 'dimensions != null': is not true.
 ```
-
-That is issue #61, open since June 2020.
 
 The swap is the import. Names are unchanged:
 
