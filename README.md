@@ -3,8 +3,10 @@
 # text_autosize
 
 **Status:** no new releases are planned. For the `auto_size_text` API on current
-Flutter, see the community fork
-[`flutter_auto_size_text`](https://pub.dev/packages/flutter_auto_size_text).
+Flutter, see the fork
+[`flutter_auto_size_text`](https://pub.dev/packages/flutter_auto_size_text). Its
+5.0.0 release reads no system text scale unless you pass `textScaleFactor`, and
+`wrapWords` defaults to false there.
 
 A Flutter widget that automatically resizes text to fit within its bounds.
 
@@ -13,7 +15,7 @@ migrates by changing the import. If the thing that brought you here is a
 `textScaleFactor` deprecation or a `WidgetSpan` assertion, the quoted strings
 and the edges that do not carry over are in
 [Migration from auto_size_text](#migration-from-auto_size_text). On top of the
-familiar API, this package is built against current Flutter releases and
+familiar API, this package requires Flutter 3.32 or later and
 handles `TextScaler` correctly, including nonlinear system font scaling.
 
 ![demo](doc/demo.gif)
