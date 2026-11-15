@@ -3,6 +3,7 @@
 // The code below started as a screen written against auto_size_text. Two lines
 // changed: the import, and `textScaleFactor: 1.2` became
 // `textScaler: const TextScaler.linear(1.2)`.
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:text_autosize/text_autosize.dart';
 
