@@ -2,6 +2,10 @@
 
 # text_autosize
 
+**Status:** no new releases are planned. For the `auto_size_text` API on current
+Flutter, see the community fork
+[`flutter_auto_size_text`](https://pub.dev/packages/flutter_auto_size_text).
+
 A Flutter widget that automatically resizes text to fit within its bounds.
 
 The API follows the `auto_size_text` package by Simon Leier, and existing code
